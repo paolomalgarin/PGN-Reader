@@ -98,19 +98,27 @@ export function handleBoardMove() {
 
 function handleEngineUpdate(evalData) {
     lastEvalData = evalData;
-    updateEvalBar(evalData);
 
     if (evalData.gameOver) {
+        updateEvalBar(evalData);
         els.engineInfo.innerText = evalData.result === '1/2-1/2'
             ? 'Game over: draw'
             : `Checkmate! Result: ${evalData.result}`;
         return;
     }
 
-    if (!evalData.lines || evalData.lines.length === 0) {
+    // Un aggiornamento del motore può arrivare "in due tempi": prima solo la
+    // profondità raggiunta, poi (un attimo dopo) le linee con il punteggio
+    // vero. Aggiornare la eval bar anche sul primo tipo di messaggio (senza
+    // un punteggio numerico) la lasciava bloccata sull'ultimo valore buono
+    // mostrato — spesso completamente bianca, se la posizione precedente era
+    // fortemente a favore del bianco — finché non arrivava un punteggio reale.
+    if (!evalData.lines || evalData.lines.length === 0 || typeof evalData.score !== 'number') {
         els.engineInfo.innerText = `Depth: ${evalData.depth}`;
         return;
     }
+
+    updateEvalBar(evalData);
 
     const rows = evalData.lines.map((line, i) => {
         const scoreStr = line.type === 'mate'
@@ -147,6 +155,7 @@ function updateEvalBar(evalData) {
     }
 
     let score = evalData.score;
+    if (typeof score !== 'number' || !Number.isFinite(score)) score = 0;
     let percentage = 50;
     let displayScore = "0.0";
 
