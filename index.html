@@ -10,9 +10,58 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="index.css">
+    <script>
+        // Applicato PRIMA che il CSS venga dipinto, per evitare un lampo del
+        // tema sbagliato: legge la preferenza salvata, altrimenti quella di
+        // sistema. Il pulsante nell'header (gestito da reader/main.js) la
+        // aggiorna e la ricorda per le visite successive.
+        (function () {
+            try {
+                var saved = localStorage.getItem('pgn-reader-theme');
+                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) { /* localStorage non disponibile: resta il tema chiaro di default */ }
+        })();
+    </script>
 </head>
 
 <body>
+    <!-- Header: sostituisce i vecchi controlli "flottanti" sopra la
+         scacchiera (mute, streak, banner di esplorazione) che su mobile
+         finivano a coprirne le prime righe, impedendo di muovere i pezzi lì.
+         Essendo qui nel normale flusso della pagina, la scacchiera parte
+         sempre SOTTO di lui: risolve il bug alla radice. Resta visibile in
+         ogni modalità (anche in DRILL, dove il pannello dei tab è nascosto),
+         quindi ospita anche il selettore di modalità. -->
+    <header class="app-header">
+        <div class="app-header-slot app-header-start">
+            <button id="btn-theme" class="icon-btn" title="Cambia tema chiaro/scuro" aria-label="Cambia tema"></button>
+            <button id="btn-mute" class="icon-btn" title="Attiva/disattiva suoni" aria-label="Attiva/disattiva suoni">🔊</button>
+        </div>
+
+        <div class="app-header-slot app-header-center">
+            <div id="drill-streak" class="drill-streak">
+                <span class="drill-streak-flame">♛</span>
+                <span id="drill-streak-count">0</span>
+            </div>
+
+            <!-- Mostrato solo in READ mentre ci sono mosse "di prova" non
+                 salvate sulla scacchiera. -->
+            <div id="exploration-banner" class="exploration-banner">
+                <span class="exploration-banner-text">🔀 Stai esplorando — non salvato</span>
+                <button id="btn-reset-exploration" class="exploration-reset-btn" title="Scarta l'esplorazione">↺ Reset</button>
+            </div>
+        </div>
+
+        <div class="app-header-slot app-header-end">
+            <div class="mode-switch" id="mode-switch">
+                <button type="button" class="mode-switch-btn" id="mode-btn-edit" data-mode="EDIT">Prepara</button>
+                <button type="button" class="mode-switch-btn" id="mode-btn-read" data-mode="READ">Studia</button>
+                <button type="button" class="mode-switch-btn" id="mode-btn-drill" data-mode="DRILL">Allena</button>
+            </div>
+        </div>
+    </header>
+
     <div class="board-and-controls">
 
         <div class="game-area">
@@ -30,8 +79,8 @@
         <div class="tabs">
             <div class="tab-switcher">
                 <div class="tab selected" id="analysis-tab">ANALYSIS</div>
-                <div class="tab" id="edit-tab">EDIT</div>
-                <div class="tab" id="export-tab">EXPORT</div>
+                <div class="tab" id="edit-tab">NOTES</div>
+                <div class="tab" id="export-tab">FILE</div>
             </div>
 
             <!-- TAB: ANALYSIS -->
@@ -71,7 +120,7 @@
                 <div id="move-list" class="move-list"></div>
             </div>
 
-            <!-- TAB: EDIT -->
+            <!-- TAB: NOTES (comment + NAG editing) -->
             <div id="edit" class="tab-content" style="display: none;">
                 <label class="field-label" for="comment-editor">Move comment</label>
                 <textarea id="comment-editor" class="comment-editor" spellcheck="false"></textarea>
@@ -88,7 +137,7 @@
                 </div>
             </div>
 
-            <!-- TAB: EXPORT -->
+            <!-- TAB: FILE (import/export PGN) -->
             <div id="export" class="tab-content" style="display: none;">
                 <label class="field-label" for="pgn-file-input">Load PGN from file (replaces the current game)</label>
                 <input type="file" id="pgn-file-input" accept=".pgn,.txt,text/plain,*/*" />
@@ -112,32 +161,16 @@
 
     </div>
 
-    <!-- Mode switch button: outside the tabs panel so it stays reachable in
-         DRILL mode too, where the tabs are hidden. -->
-    <div id="mode-btn">EDIT</div>
-
-    <div id="btn-mute" class="mute-btn" title="Toggle sounds">🔊</div>
-
-    <!-- In DRILL mode the whole tabs panel (including the analysis tab's
-         "Flip board") is hidden: this equivalent button stays visible only
-         in that mode (see index.css). -->
-    <div id="btn-flip-drill" class="drill-flip-btn">Flip board</div>
-
-    <div id="drill-streak" class="drill-streak">
-        <span class="drill-streak-flame">👑</span>
-        <span id="drill-streak-count">0</span>
+    <!-- Barra del DRILL: sostituisce il vecchio pulsante "flip" fisso in
+         basso a sinistra — anche questo ora prende spazio vero nel layout
+         invece di galleggiare sopra la scacchiera. Visibile solo in DRILL
+         (dove il resto dei tab è nascosto). -->
+    <div class="drill-toolbar">
+        <button id="btn-flip-drill" class="drill-flip-btn">↺ Flip board</button>
     </div>
 
-    <!-- Canvas per il coriandoli d'oro ai milestone di streak in DRILL -->
+    <!-- Canvas per i coriandoli d'oro ai milestone di streak in DRILL -->
     <canvas id="confetti-canvas"></canvas>
-
-    <!-- Shown only in READ mode while temporary (unsaved) moves are on the
-         board — makes it clear you're off the tracked PGN line, with a way
-         to discard the detour and snap back. -->
-    <div id="exploration-banner" class="exploration-banner">
-        <span class="exploration-banner-text">🔀 Exploring — not saved to PGN</span>
-        <button id="btn-reset-exploration" class="exploration-reset-btn" title="Discard exploration">↺ Reset</button>
-    </div>
 
     <!-- Chessboard.js stays a classic script (data-URI SVGs generated on the
          fly, no module needed). reader/main.js is an ES module and imports
