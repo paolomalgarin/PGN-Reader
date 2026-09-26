@@ -172,6 +172,15 @@ class Chessboard {
             .cb-wrapper { position: relative; width: 100%; aspect-ratio: 1 / 1; user-select: none; -webkit-user-select: none; touch-action: none; }
             .cb-grid { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
             .cb-square { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background-size: cover; cursor: pointer; }
+            /* Colore di base delle caselle: qui per CSS puro (sovrascrivibile
+               dal foglio di stile della pagina ospite) invece che via
+               data-URI passata come immagine di sfondo — quest'ultima, in
+               certi contesti di hosting statico, può non venire applicata
+               (background-image resta vuoto, casella trasparente). Un vero
+               colore CSS non ha questo problema e resta comunque il
+               fallback anche quando images.squares.light/dark è impostato. */
+            .cb-square-light { background-color: #fefae0; }
+            .cb-square-dark { background-color: #d4a373; }
             .cb-piece { width: 92%; height: 92%; z-index: 10; object-fit: contain; pointer-events: none; }
             .cb-piece-landed { animation: cb-piece-pop .22s cubic-bezier(.34, 1.56, .64, 1); }
             @keyframes cb-piece-pop {
@@ -179,6 +188,12 @@ class Chessboard {
                 60% { transform: scale(1.12); }
                 100% { transform: scale(1); opacity: 1; }
             }
+            /* Animazione di scorrimento: il pezzo arrivato viene posizionato
+               (via JS, con transform e SENZA questa classe) esattamente sopra
+               la casella di partenza, poi la classe viene aggiunta un frame
+               dopo — la transition qui sotto anima il transform tornato a
+               zero, facendolo scivolare visivamente da una casella all'altra. */
+            .cb-piece-sliding { transition: transform .2s cubic-bezier(.22, .61, .36, 1); }
             
             .cb-drag-ghost { position: fixed; z-index: 1000; pointer-events: none; object-fit: contain; }
             .cb-hidden-piece { opacity: 0; }
@@ -265,17 +280,20 @@ class Chessboard {
             for (let c = 0; c < 8; c++) {
                 const col = this.isFlipped ? (7 - c) : c;
                 const sq = document.createElement('div');
-                sq.className = 'cb-square';
                 const isLight = (row + col) % 2 === 0;
+                sq.className = 'cb-square ' + (isLight ? 'cb-square-light' : 'cb-square-dark');
                 const sqName = files[col] + row;
                 sq.dataset.sq = sqName;
 
+                // Il colore "di base" arriva dalle classi cb-square-light/dark
+                // sopra (CSS puro, sempre valido). Se l'app ospite fornisce
+                // un'immagine custom per le caselle, questa si sovrappone
+                // come background-image — ma il colore CSS resta comunque
+                // sotto come fallback nel caso l'immagine non si carichi.
                 if (isLight && this.config.images.squares.light) {
                     sq.style.backgroundImage = `url(${this.config.images.squares.light})`;
                 } else if (!isLight && this.config.images.squares.dark) {
                     sq.style.backgroundImage = `url(${this.config.images.squares.dark})`;
-                } else {
-                    sq.style.backgroundColor = isLight ? '#fefae0' : '#d4a373';
                 }
 
                 sq.addEventListener('pointerdown', (e) => {
@@ -677,14 +695,11 @@ class Chessboard {
 
                 if (cell) {
                     // Priorità del colore "di base" della casella: selezione (interazione
-                    // attiva dell'utente) > NAG (annotazione della mossa) > ultima mossa
-                    // (colore di default). Così, se la casella del NAG viene selezionata,
-                    // prende temporaneamente il colore di selezione; appena deselezionata
-                    // torna al colore del NAG invece che a quello generico di lastMove.
+                    // attiva dell'utente) > ultima mossa (colore di default). Il NAG non
+                    // tinge più l'intera casella (era troppo invadente sull'occhio ad ogni
+                    // mossa annotata) — resta comunque visibile tramite il badge più sotto.
                     if (this.selectedSquare === sqName) {
                         this._addHighlight(cell, this.config.colors.selected);
-                    } else if (this.currentNag && this.currentNag.square === sqName) {
-                        this._addHighlight(cell, this._getNagVisual(this.currentNag.nag).color);
                     } else if (this.lastMove && (this.lastMove.from === sqName || this.lastMove.to === sqName)) {
                         this._addHighlight(cell, this.config.colors.lastMove);
                     }
@@ -707,7 +722,30 @@ class Chessboard {
                         const img = document.createElement('img');
                         img.className = 'cb-piece';
 
+                        // Scorrimento: il pezzo arrivato viene posizionato (via transform,
+                        // senza transition) esattamente sopra la casella di PARTENZA usando
+                        // le coordinate reali degli elementi — funziona sia a scacchiera
+                        // dritta che flippata, senza dover rifare i conti riga/colonna. Un
+                        // frame dopo si toglie il transform (con la transition stavolta
+                        // attiva): il pezzo scivola visivamente da una casella all'altra
+                        // invece di comparire di scatto sulla destinazione.
+                        let slideFrom = null;
                         if (this.lastMove && this.lastMove.to === sqName && newlyMovedTo === sqName) {
+                            const fromCell = this.grid.querySelector(`[data-sq="${this.lastMove.from}"]`);
+                            if (fromCell) {
+                                const fromRect = fromCell.getBoundingClientRect();
+                                const toRect = cell.getBoundingClientRect();
+                                const dx = fromRect.left - toRect.left;
+                                const dy = fromRect.top - toRect.top;
+                                if (dx || dy) slideFrom = { dx, dy };
+                            }
+                        }
+
+                        if (slideFrom) {
+                            img.style.transform = `translate(${slideFrom.dx}px, ${slideFrom.dy}px)`;
+                        } else if (this.lastMove && this.lastMove.to === sqName && newlyMovedTo === sqName) {
+                            // Nessuna casella di partenza nota (es. pezzo apparso da una
+                            // promozione sulla stessa casella): resta il "pop" sul posto.
                             img.classList.add('cb-piece-landed');
                         }
 
@@ -718,6 +756,21 @@ class Chessboard {
                         const pieceKey = piece.color + piece.type;
                         img.src = this.config.images.pieces[pieceKey] || '';
                         cell.appendChild(img);
+
+                        if (slideFrom) {
+                            // Doppio requestAnimationFrame: serve a garantire che il browser
+                            // dipinga la posizione di partenza (transform impostato sopra,
+                            // SENZA transition) prima di applicare la classe che attiva la
+                            // transition — un solo rAF a volte capita nello stesso frame di
+                            // paint e l'animazione salterebbe, con il pezzo che compare già
+                            // arrivato invece di scivolare.
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    img.classList.add('cb-piece-sliding');
+                                    img.style.transform = 'translate(0, 0)';
+                                });
+                            });
+                        }
                     }
                 }
             }
@@ -772,12 +825,13 @@ class Chessboard {
         if (info && info.icon === 'star') {
             glyph = `<polygon points="${this._starPoints(50, 51, 28, 11)}" fill="${inkColor}"/>`;
         } else if (info && info.icon === 'thumbsup') {
+            // Forme semplici invece di un profilo disegnato a mano: molto più
+            // riconoscibile a piccola dimensione — polsino, pugno chiuso e
+            // pollice inclinato verso l'alto.
             glyph = `<g fill="${inkColor}">`
-                + `<rect x="25" y="52" width="13" height="26" rx="4"/>`
-                + `<path d="M41 78 L41 48 Q41 46 43 46 L57 46 Q63 46 63 51 `
-                + `Q63 54.5 59.5 55.5 Q63.5 57 63.5 61 Q63.5 64.5 59.5 66 `
-                + `Q62 67.5 62 70.5 Q62 76 55 76 Z"/>`
-                + `<path d="M45 46 L45 27 Q45 19 52 19 Q56 19 56 25 L56 46 Z"/>`
+                + `<rect x="52" y="68" width="27" height="15" rx="4"/>`
+                + `<rect x="50" y="33" width="25" height="41" rx="10"/>`
+                + `<rect x="27" y="15" width="17" height="35" rx="8" transform="rotate(-30 35.5 32.5)"/>`
                 + `</g>`;
         } else {
             // "Faux bold": oltre al font-weight, si applica al testo uno stroke dello
@@ -1371,12 +1425,12 @@ class Chessboard {
 // sovrascrivere il colore (config.colors.nag) e/o fornire una propria immagine
 // (config.images.nags) per uno o più codici, senza dover ridefinire l'intera mappa.
 Chessboard.DEFAULT_NAG_INFO = {
-    '$1':  { symbol: '!',  color: '#749bbf' }, // buona mossa
-    '$2':  { symbol: '?',  color: '#e58f2c' }, // errore/mistake
-    '$3':  { symbol: '!!', color: '#26c2a3' }, // mossa brillante
-    '$4':  { symbol: '??', color: '#fa412d' }, // svista/blunder
+    '$1':  { symbol: '!',  color: '#5c8bb0' }, // buona mossa — blu "Great" di chess.com
+    '$2':  { symbol: '?',  color: '#e6912c' }, // errore/mistake — arancione "Mistake" di chess.com
+    '$3':  { symbol: '!!', color: '#1baca6' }, // mossa brillante — teal "Brilliant" di chess.com
+    '$4':  { symbol: '??', color: '#fa412d' }, // svista/blunder — rosso "Blunder" di chess.com
     '$5':  { symbol: '!?', color: '#3593d6' }, // mossa interessante
-    '$6':  { symbol: '?!', color: '#f7c631' }, // mossa dubbia/imprecisione
+    '$6':  { symbol: '?!', color: '#f0c33d' }, // mossa dubbia/imprecisione — giallo "Inaccuracy" di chess.com
     '$7':  { symbol: '➡',  color: '#6fa06f' }, // mossa forzata/unica
     '$10': { symbol: '=',  color: '#8a8a8a' }, // posizione pari
     '$13': { symbol: '∞',  color: '#5c7cba' }, // posizione poco chiara
@@ -1389,9 +1443,10 @@ Chessboard.DEFAULT_NAG_INFO = {
 
     // Due aggiunte "custom" (non standard PGN, come le usa chess.com nella sua
     // UI): $101/$102 sono numeri fuori dal range standard proprio per non
-    // sovrapporsi a nessun significato ufficiale della tabella NAG.
-    '$101': { icon: 'thumbsup', color: '#86efac' }, // good move (chess.com-style) — verde meno intenso
-    '$102': { icon: 'star',     color: '#15803d' }  // best move (chess.com-style) — verde intenso
+    // sovrapporsi a nessun significato ufficiale della tabella NAG. Verdi
+    // allineati a "Excellent"/"Best" di chess.com per familiarità.
+    '$101': { icon: 'thumbsup', color: '#96bc4b' }, // excellent move (chess.com-style)
+    '$102': { icon: 'star',     color: '#81b64c' }  // best move (chess.com-style) — verde storico di chess.com
 };
 
 // Chessboard.js resta uno script "classico" (non un modulo ES) per poter fare
