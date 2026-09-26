@@ -82,13 +82,16 @@ export function extractContentOnly(raw) {
  * (cb-comment-opening, cb-comment-variation, cb-comment-line,
  * cb-comment-content) così lo stile si definisce tutto in CSS.
  *
- * Se <opening>/<variation>/<line> non sono compilati (tag assente o vuoto),
- * il buco viene riempito automaticamente cercando la posizione nel database
- * ECO (vedi eco.js): serve la sequenza di mosse dalla radice fino a questo
- * nodo. Se non si trova nulla (posizione fuori teoria, Chess960, ecc.) il
- * nome dell'apertura mostra "Unknown opening" in stile smorzato, per
- * segnalare chiaramente che non è un dato compilato — mai un campo che
- * sembra "vero" ma è in realtà un placeholder silenzioso.
+ * Se <opening>/<variation> non sono compilati (tag assente o vuoto), il buco
+ * viene riempito automaticamente cercando la posizione nel database ECO
+ * (vedi eco.js): serve la sequenza di mosse dalla radice fino a questo nodo.
+ * Se non si trova nulla (posizione fuori teoria, Chess960, ecc.) il nome
+ * dell'apertura mostra "Unknown opening" in stile smorzato, per segnalare
+ * chiaramente che non è un dato compilato — mai un campo che sembra "vero"
+ * ma è in realtà un placeholder silenzioso. Il codice ECO (es. "B12") non
+ * viene invece più auto-compilato: è un riferimento da database, non
+ * un'informazione utile a chi studia — <line> resta disponibile solo se
+ * scritta a mano.
  *
  * @param {String} raw
  * @param {String[]} [sanPath] - mosse SAN dalla radice al nodo corrente,
@@ -101,8 +104,7 @@ export function renderCommentHTML(raw, sanPath = []) {
 
     const needsOpening = !parts.opening;
     const needsVariation = !parts.variation;
-    const needsLine = !parts.line;
-    const ecoMatch = (needsOpening || needsVariation || needsLine)
+    const ecoMatch = (needsOpening || needsVariation)
         ? lookupOpening(sanPath)
         : null;
 
@@ -122,10 +124,10 @@ export function renderCommentHTML(raw, sanPath = []) {
         variationText = ecoMatch.subVariation;
     }
 
-    let lineText = parts.line;
-    if (needsLine && ecoMatch) {
-        lineText = ecoMatch.eco;
-    }
+    // Il codice ECO (es. "B12") non viene più auto-compilato qui: è un
+    // riferimento da database che non serve a chi studia — la riga <line>
+    // resta disponibile solo se scritta a mano dall'utente.
+    const lineText = parts.line;
 
     if (openingText) {
         const cls = openingIsFallback
