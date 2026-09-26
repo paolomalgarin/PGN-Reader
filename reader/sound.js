@@ -98,16 +98,25 @@ function noiseBurst(c, startAt, dur, { peakGain = 0.12, filterFreq = 1200, filte
 // --- RICETTE: una funzione per ciascun suono, tutte in termini di tone()/noiseBurst() ---
 
 const RECIPES = {
+    // Un vero pezzo che tocca la scacchiera è percussivo, non melodico: un
+    // breve "thud" grave (il corpo del pezzo) più un click secco e brevissimo
+    // (il contatto netto) — non una nota sinusoidale isolata, che suona più
+    // da notifica di app che da scacchiera.
     move: (c) => {
-        tone(c, 520, 0, 0.09, { type: 'triangle', peakGain: 0.18, attack: 0.002, release: 0.08 });
+        tone(c, 185, 0, 0.06, { type: 'sine', peakGain: 0.24, attack: 0.001, release: 0.05, glideTo: 150 });
+        noiseBurst(c, 0, 0.018, { peakGain: 0.05, filterFreq: 4200, filterType: 'bandpass' });
     },
+    // Stessa idea della mossa ma più "dura": corpo più grave, click più
+    // presente — la differenza che si sente subito tra spostare e catturare.
     capture: (c) => {
-        tone(c, 340, 0, 0.1, { type: 'square', peakGain: 0.14, attack: 0.001, release: 0.08, glideTo: 220 });
-        noiseBurst(c, 0, 0.05, { peakGain: 0.06, filterFreq: 2200 });
+        tone(c, 130, 0, 0.09, { type: 'triangle', peakGain: 0.22, attack: 0.001, release: 0.075, glideTo: 95 });
+        noiseBurst(c, 0, 0.035, { peakGain: 0.09, filterFreq: 2400, filterType: 'bandpass' });
+        noiseBurst(c, 0.012, 0.022, { peakGain: 0.05, filterFreq: 5200, filterType: 'bandpass' });
     },
     check: (c) => {
-        tone(c, 660, 0, 0.09, { type: 'triangle', peakGain: 0.2 });
-        tone(c, 880, 0.09, 0.14, { type: 'triangle', peakGain: 0.2 });
+        tone(c, 720, 0, 0.08, { type: 'triangle', peakGain: 0.19, detune: 5 });
+        tone(c, 720, 0, 0.08, { type: 'triangle', peakGain: 0.19, detune: -5 });
+        tone(c, 980, 0.08, 0.15, { type: 'triangle', peakGain: 0.19 });
     },
     gameEnd: (c) => {
         [523.25, 415.3, 349.23].forEach((f, i) => {
@@ -122,8 +131,11 @@ const RECIPES = {
         });
         tone(c, 1567.98, 0.28, 0.35, { type: 'sine', peakGain: 0.09, release: 0.32 });
     },
+    // Il "timbro" di un NAG appena assegnato: un click secco e leggero,
+    // come una spunta su un modulo — non un tono musicale.
     nag: (c) => {
-        tone(c, 740, 0, 0.06, { type: 'sine', peakGain: 0.16, attack: 0.002, release: 0.05 });
+        tone(c, 900, 0, 0.03, { type: 'square', peakGain: 0.1, attack: 0.001, release: 0.02 });
+        noiseBurst(c, 0, 0.012, { peakGain: 0.04, filterFreq: 5000, filterType: 'bandpass' });
     },
     delete: (c) => {
         tone(c, 420, 0, 0.16, { type: 'sawtooth', peakGain: 0.1, glideTo: 140, release: 0.14 });
@@ -136,11 +148,13 @@ const RECIPES = {
     notify: (c) => {
         tone(c, 880, 0, 0.1, { type: 'sine', peakGain: 0.14, release: 0.09 });
     },
-    // Mossa "a libro" in DRILL: chirp ascendente breve, la stessa grammatica
-    // sonora dei feedback "corretto" delle app di apprendimento.
+    // Mossa "a libro" in DRILL: lo stesso "thud" della mossa normale, ma con
+    // un piccolo chirp ascendente sopra a dire "corretto" — resta riconoscibile
+    // come mossa scacchistica invece di un generico suono da app di studio.
     correct: (c) => {
-        tone(c, 587.33, 0, 0.08, { type: 'sine', peakGain: 0.18, release: 0.07 });
-        tone(c, 880, 0.06, 0.13, { type: 'sine', peakGain: 0.2, release: 0.12 });
+        tone(c, 175, 0, 0.055, { type: 'sine', peakGain: 0.22, attack: 0.001, release: 0.045, glideTo: 145 });
+        noiseBurst(c, 0, 0.016, { peakGain: 0.045, filterFreq: 4200, filterType: 'bandpass' });
+        tone(c, 880, 0.05, 0.12, { type: 'sine', peakGain: 0.16, release: 0.1 });
     },
     // Milestone di streak (ogni 5): piccola fanfara + coriandoli sonori.
     milestone: (c) => {
