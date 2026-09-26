@@ -38,10 +38,22 @@ const board = new Chessboard('#board-container', {
     images: myImages,
     showSuggestions: true,
     colors: {
-        selected: 'rgba(124, 47, 34, 0.4)',
-        lastMove: 'rgba(163, 121, 47, 0.4)',
-        suggestion: 'rgba(43, 32, 19, 0.28)',
-        customHighlight: 'rgba(107, 61, 92, 0.45)'
+        // Giallo-ambra classico da scacchiera (lichess/chess.com): molto più
+        // leggibile del bordeaux/ottone traslucido usato prima, che sulle
+        // caselle chiare/scure risultava spento e poco distinguibile.
+        selected: 'rgba(255, 214, 79, 0.65)',
+        lastMove: 'rgba(255, 214, 79, 0.45)',
+        suggestion: 'rgba(30, 24, 16, 0.35)',
+        // Evidenziazioni disegnate a mano (tasto destro): un rosso-arancio
+        // netto, distinto sia dal giallo di selezione/ultima mossa sia
+        // dall'arancione delle frecce manuali qui sotto.
+        customHighlight: 'rgba(224, 90, 46, 0.55)',
+        // Frecce disegnate a mano: l'arancione "classico" resta bene anche
+        // sul nostro fondo caldo. Le frecce delle mosse disponibili (blu
+        // dell'app originale) diventano un azzurro-petrolio più smorzato,
+        // per non competere visivamente con l'ambra di selezione/lastMove.
+        arrow: 'rgba(255, 170, 0, 0.85)',
+        availableMoveArrow: 'rgba(88, 140, 158, 0.55)'
     },
 });
 
