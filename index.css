@@ -408,6 +408,18 @@ body.mode-drill .drill-toolbar {
     box-shadow: 0 0 0 1px var(--rule), var(--shadow-card);
 }
 
+/* Colore delle caselle: sempre lo stesso, a prescindere dal tema chiaro/
+   scuro del sito (come su lichess/chess.com — è una scelta a sé). Queste
+   classi sono definite da Chessboard.js stesso con un fallback via CSS
+   puro; qui le sovrascriviamo semplicemente con i nostri colori. */
+.cb-square-light {
+    background-color: #f3e8d0;
+}
+
+.cb-square-dark {
+    background-color: #b1834f;
+}
+
 .tabs {
     width: min(420px, calc(100vw - 40px));
     display: flex;
@@ -475,7 +487,7 @@ body.mode-drill .drill-toolbar {
        scroll-anchoring del browser. Il pannello ora è una "carta" stabile,
        come in un'app da mobile — solo il suo contenuto scorre. */
     height: min(70vh, calc(100vw - 60px));
-    border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     box-shadow: var(--shadow-card);
     overflow-y: auto;
     overscroll-behavior: contain;
