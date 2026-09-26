@@ -7,6 +7,29 @@ import { playSound } from "../sound.js";
 let board = null;
 let els = {};
 
+// Etichette leggibili per il tooltip di ciascun NAG — Chessboard.js conosce
+// solo simbolo+colore (serve a disegnare il badge), non una descrizione
+// testuale, quindi la teniamo qui accanto alla UI che la mostra.
+const NAG_LABELS = {
+    '$1': 'Buona mossa',
+    '$2': 'Imprecisione / errore',
+    '$3': 'Mossa brillante',
+    '$4': 'Svista (blunder)',
+    '$5': 'Mossa interessante',
+    '$6': 'Mossa dubbia',
+    '$7': 'Mossa forzata/unica',
+    '$10': 'Posizione pari',
+    '$13': 'Posizione poco chiara',
+    '$14': 'Leggero vantaggio bianco',
+    '$15': 'Leggero vantaggio nero',
+    '$16': 'Vantaggio bianco',
+    '$17': 'Vantaggio nero',
+    '$18': 'Bianco vincente',
+    '$19': 'Nero vincente',
+    '$101': 'Buona mossa (stile chess.com)',
+    '$102': 'Mossa migliore (stile chess.com)',
+};
+
 /**
  * @param {Chessboard} chessboard
  */
@@ -80,7 +103,7 @@ function buildNagPalette() {
         btn.type = 'button';
         btn.className = 'nag-btn';
         btn.dataset.nag = code;
-        btn.title = code;
+        btn.title = NAG_LABELS[code] ? `${NAG_LABELS[code]} (${code})` : code;
         btn.style.setProperty('--nag-color', visual.color);
         btn.innerHTML = `<img src="${visual.image}" alt="${code}" />`;
         btn.addEventListener('click', () => onNagClick(code));
