@@ -529,7 +529,11 @@ body.mode-drill .drill-toolbar {
 /* --- EVAL BAR --- */
 .eval-bar-wrapper {
     width: 24px;
-    background-color: var(--ink);
+    /* Colore fisso, non legato al tema chiaro/scuro del sito: qui "nero" deve
+       restare sempre visivamente scuro. var(--ink) si inverte apposta tra i
+       due temi (è il colore del testo), quindi usarla qui mandava la barra
+       in confusione nel tema scuro (lo sfondo "nero" diventava chiaro). */
+    background-color: #201810;
     border-radius: var(--radius-sm);
     margin-right: 14px;
     position: relative;
@@ -566,7 +570,7 @@ body.mode-drill .drill-toolbar {
 
 .eval-bar-text.top {
     top: 0;
-    color: var(--paper-panel);
+    color: #f6ede0;
 }
 
 .eval-bar-text.bottom {
