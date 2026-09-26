@@ -1,10 +1,10 @@
-import { state, notifyChange, onStateChange, setExploring } from "./state.js";
+import { state, notifyChange, onStateChange, setExploring, setMode } from "./state.js";
 import { attachKeyboardNavigation, goBack, goForward, jumpToNode } from "./navigation.js";
 import { syncBoardToCurrentNode, setMoveArrowsEnabled, areMoveArrowsEnabled } from "./boardSync.js";
 import { saveArrowsAndHighlights } from "./commentFormat.js";
 import { playMoveSound, playMoveSoundForNode, playSound, setMuted, isMuted } from "./sound.js";
 import { confettiBurst } from "./confetti.js";
-import { initModeHandling, cycleMode, needsPgnGate } from "./mode.js";
+import { initModeHandling, needsPgnGate } from "./mode.js";
 import { setHumanColor, maybePlayComputerMove, cancelPendingComputerMove, setAfterMoveCallback, recordHumanMove, getStreak, resetStreak } from "./drill.js";
 import { showPgnGate, hidePgnGate } from "./ui/pgnGate.js";
 import { initTabs, switchTab } from "./ui/tabs.js";
@@ -16,6 +16,17 @@ import { initExportTab } from "./ui/exportTab.js";
 // Chessboard.js resta uno script classico (vedi il commento in fondo a quel
 // file) e si registra esplicitamente su window per un accesso affidabile qui.
 const Chessboard = window.Chessboard;
+
+// Piccola immagine SVG a tinta unita, usata per colorare le caselle chiare/
+// scure della scacchiera in coerenza col resto della UI (Chessboard.js non
+// accetta un colore CSS diretto per le caselle, solo un'immagine di sfondo).
+// Il colore della scacchiera resta fisso indipendentemente dal tema chiaro/
+// scuro del sito — come su lichess/chess.com, è una scelta editoriale a sé,
+// non deve "spegnersi" quando si passa al tema notturno.
+function solidSquareImage(hex) {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><rect width='8' height='8' fill='${hex}'/></svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
 
 const myImages = {
     pieces: {
@@ -32,16 +43,21 @@ const myImages = {
         bn: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
         bp: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg'
     },
-    squares: { light: '', dark: '', highlight: '' }
+    squares: {
+        light: solidSquareImage('#f3e8d0'),
+        dark: solidSquareImage('#b1834f'),
+        highlight: ''
+    }
 };
 
 const board = new Chessboard('#board-container', {
     images: myImages,
     showSuggestions: true,
     colors: {
-        selected: 'rgba(255, 214, 112, 0.6)',
-        lastMove: 'rgba(255, 214, 112, 0.4)',
-        suggestion: 'rgba(20, 20, 20, 0.25)'
+        selected: 'rgba(124, 47, 34, 0.4)',
+        lastMove: 'rgba(163, 121, 47, 0.4)',
+        suggestion: 'rgba(43, 32, 19, 0.28)',
+        customHighlight: 'rgba(107, 61, 92, 0.45)'
     },
 });
 
@@ -216,19 +232,39 @@ document.getElementById('btn-reset-exploration').addEventListener('click', () =>
     jumpToNode(board, state.tree.current, afterNavigate);
 });
 
+// --- Selettore di modalità: tre pulsanti espliciti (Prepara/Studia/Allena)
+// invece dell'unico pulsante "a ciclo" di prima — si vede sempre dove si è e
+// si arriva ovunque in un tocco. Ogni pulsante porta direttamente al proprio
+// state.mode (vedi state.js) tramite setMode(); lo streak si azzera uscendo
+// dal drill, esattamente come faceva il vecchio pulsante unico.
+document.querySelectorAll('.mode-switch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const targetMode = btn.dataset.mode;
+        if (state.mode === targetMode) return;
+        if (state.mode === 'DRILL') resetStreak();
+        setMode(targetMode);
+    });
+});
+
+function refreshModeSwitch() {
+    document.querySelectorAll('.mode-switch-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === state.mode);
+    });
+}
+
 /**
  * Riflette lo stato corrente (modalità, albero vuoto o meno...) sul layout
  * generale della pagina: classe sul body (la usa index.css per mostrare/
- * nascondere tab ed eval bar a seconda della modalità), tab forzato in READ,
- * gate PGN quando serve, avvio/stop della modalità drill. Unico punto che
- * traduce "stato" in "cosa si vede sullo schermo" a livello di pagina — i
- * singoli tab si occupano solo del proprio contenuto interno tramite le
- * proprie sottoscrizioni a onStateChange().
+ * nascondere tab ed eval bar a seconda della modalità), selettore di
+ * modalità, tab forzato in READ, gate PGN quando serve, avvio/stop della
+ * modalità drill. Unico punto che traduce "stato" in "cosa si vede sullo
+ * schermo" a livello di pagina — i singoli tab si occupano solo del proprio
+ * contenuto interno tramite le proprie sottoscrizioni a onStateChange().
  */
 function applyStateEffects() {
     document.body.className = 'mode-' + state.mode.toLowerCase();
     document.body.classList.toggle('exploring', state.isExploring);
-    document.getElementById('mode-btn').innerText = state.mode;
+    refreshModeSwitch();
 
     if (state.mode === 'READ') {
         switchTab('analysis-tab', 'analysis');
@@ -255,10 +291,6 @@ function applyStateEffects() {
 onStateChange(applyStateEffects);
 applyStateEffects();
 
-document.getElementById('mode-btn').addEventListener('click', () => {
-    if (state.mode === 'DRILL') resetStreak();
-    cycleMode();
-});
 document.getElementById('btn-flip-drill').addEventListener('click', flipBoard);
 
 // --- Streak della modalità drill (piccola gamification) ---
@@ -290,6 +322,23 @@ const btnMute = document.getElementById('btn-mute');
 btnMute.addEventListener('click', () => {
     setMuted(!isMuted());
     btnMute.textContent = isMuted() ? '🔇' : '🔊';
+});
+
+// --- Tema chiaro/scuro ---
+// L'attributo data-theme è già impostato PRIMA di questo script (vedi lo
+// script inline in index.html, che legge localStorage/preferenza di sistema
+// senza aspettare il modulo) — qui ci si limita a sincronizzare l'icona e a
+// gestire il click.
+const btnTheme = document.getElementById('btn-theme');
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('pgn-reader-theme', theme); } catch (e) { /* ok, resta solo per questa sessione */ }
+    btnTheme.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+btnTheme.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
 // Utile per debug/ispezione manuale dalla console del browser.
