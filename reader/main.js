@@ -17,17 +17,6 @@ import { initExportTab } from "./ui/exportTab.js";
 // file) e si registra esplicitamente su window per un accesso affidabile qui.
 const Chessboard = window.Chessboard;
 
-// Piccola immagine SVG a tinta unita, usata per colorare le caselle chiare/
-// scure della scacchiera in coerenza col resto della UI (Chessboard.js non
-// accetta un colore CSS diretto per le caselle, solo un'immagine di sfondo).
-// Il colore della scacchiera resta fisso indipendentemente dal tema chiaro/
-// scuro del sito — come su lichess/chess.com, è una scelta editoriale a sé,
-// non deve "spegnersi" quando si passa al tema notturno.
-function solidSquareImage(hex) {
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><rect width='8' height='8' fill='${hex}'/></svg>`;
-    return 'data:image/svg+xml,' + encodeURIComponent(svg);
-}
-
 const myImages = {
     pieces: {
         wk: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
@@ -42,11 +31,6 @@ const myImages = {
         bb: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
         bn: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
         bp: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg'
-    },
-    squares: {
-        light: solidSquareImage('#f3e8d0'),
-        dark: solidSquareImage('#b1834f'),
-        highlight: ''
     }
 };
 
