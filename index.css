@@ -1,64 +1,109 @@
 /* ==========================================================================
    DESIGN TOKENS
-   Palette "coach d'apertura": blu-inchiostro profondo, oro (il pezzo/trofeo),
-   viola per l'energia del drill, verde smeraldo/corallo per feedback.
-   Niente nero+verde acido da tema-dark-generico, niente crema+terracotta:
-   qui il tono è quello di un'app di scacchi premium con anima giocosa.
+   Ispirazione: un quaderno di studio delle aperture — pagina di carta calda,
+   inchiostro seppia/bordeaux per le note, ottone smorzato per i richiami
+   "premianti" (streak, evidenziazioni). Nessun gradiente dorato 3D da app-
+   gioco: superfici piatte, righe sottili come su una pagina vera, un solo
+   accento (bordeaux) che fa davvero da protagonista. Tema scuro incluso
+   (stessa carta, letta "a lume di lampada"), attivabile dal pulsante 🌙/☀️.
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-    /* superfici */
-    --bg: #0d121e;
-    --bg-glow-1: #16203a;
-    --bg-glow-2: #1a1030;
-    --panel: #151b2b;
-    --panel-alt: #1a2135;
-    --panel-raised: #202a42;
-    --border: #2b3654;
-    --border-soft: #212a42;
+    /* carta */
+    --paper: #ece0c4;
+    --paper-panel: #faf3e2;
+    --paper-panel-alt: #f1e6cd;
+    --paper-panel-raised: #ffffff;
+    --rule: #d9c69e;
+    --rule-soft: #e4d3ab;
 
-    /* testo */
-    --text: #f2f4fb;
-    --text-muted: #9aa4c4;
-    --text-faint-solid: #6b7699;
+    /* inchiostro */
+    --ink: #2b2013;
+    --ink-muted: #6d5b40;
+    --ink-faint: #a08a68;
 
-    /* oro — accento primario, "il pezzo pregiato" */
-    --gold: #f0b93d;
-    --gold-strong: #ffcf5c;
-    --gold-dim: #caa054;
-    --gold-ink: #2a1a02;
-    --gold-soft-bg: rgba(240, 185, 61, 0.12);
+    /* bordeaux — accento primario, l'inchiostro delle correzioni */
+    --accent: #7c2f22;
+    --accent-strong: #9c4531;
+    --accent-dim: #63241a;
+    --accent-ink: #fbf0e0;
+    --accent-soft-bg: rgba(124, 47, 34, 0.1);
 
-    /* viola — energia/gamification (drill) */
-    --violet: #9c8bff;
-    --violet-strong: #b3a4ff;
-    --violet-ink: #1c1240;
+    /* ottone — streak/premio, evidenziatore */
+    --brass: #a3792f;
+    --brass-strong: #c39440;
+    --brass-ink: #241a06;
+    --brass-soft-bg: rgba(163, 121, 47, 0.16);
+
+    /* prugna — energia del drill */
+    --plum: #6b3d5c;
+    --plum-strong: #8a5578;
+    --plum-ink: #fbf0f7;
 
     /* semantici */
-    --success: #35d493;
-    --success-ink: #04241a;
-    --success-soft-bg: rgba(53, 212, 147, 0.14);
-    --danger: #ff7a7a;
-    --danger-strong: #ff5c5c;
-    --danger-ink: #330909;
+    --success: #3f7a45;
+    --success-ink: #eaf5ea;
+    --success-soft-bg: rgba(63, 122, 69, 0.14);
+    --danger: #a4392b;
+    --danger-strong: #c14b3a;
+    --danger-ink: #fdf1ec;
 
-    /* forma */
-    --radius-sm: 10px;
-    --radius: 16px;
-    --radius-lg: 22px;
+    /* forma — più piatta, meno "pillola ovunque" */
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
     --radius-pill: 999px;
 
     /* ombre */
-    --shadow-card: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -12px rgba(0,0,0,.55);
-    --shadow-inset-line: inset 0 1px 0 rgba(255,255,255,.03);
+    --shadow-card: 0 1px 2px rgba(43, 32, 19, .08), 0 10px 24px -14px rgba(43, 32, 19, .28);
+    --shadow-inset-line: inset 0 1px 0 rgba(255, 255, 255, .5);
 
-    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    --font-display: 'Lora', ui-serif, Georgia, serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
 
     --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
     --ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* --- TEMA SCURO: stessa "carta", letta a lume di lampada --- */
+:root[data-theme="dark"] {
+    --paper: #201812;
+    --paper-panel: #2a2018;
+    --paper-panel-alt: #332619;
+    --paper-panel-raised: #3a2c1e;
+    --rule: #4a3826;
+    --rule-soft: #3c2d1e;
+
+    --ink: #f1e6d3;
+    --ink-muted: #c3ac8b;
+    --ink-faint: #8f795c;
+
+    --accent: #d97a5c;
+    --accent-strong: #ea9271;
+    --accent-dim: #b85f43;
+    --accent-ink: #2a1006;
+    --accent-soft-bg: rgba(217, 122, 92, 0.16);
+
+    --brass: #d4a63f;
+    --brass-strong: #e6c065;
+    --brass-ink: #241a02;
+    --brass-soft-bg: rgba(212, 166, 63, 0.18);
+
+    --plum: #a878a0;
+    --plum-strong: #c397ba;
+    --plum-ink: #2a1626;
+
+    --success: #5fae68;
+    --success-ink: #0d2210;
+    --success-soft-bg: rgba(95, 174, 104, .16);
+    --danger: #e2685a;
+    --danger-strong: #ef8a7d;
+    --danger-ink: #2e0b06;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, .35), 0 12px 28px -14px rgba(0, 0, 0, .6);
+    --shadow-inset-line: inset 0 1px 0 rgba(255, 255, 255, .05);
 }
 
 * {
@@ -72,46 +117,275 @@ html {
        strutturale è dare al pannello dei tab un'altezza fissa con scroll
        interno (vedi .tab-content), questo è solo una rete di sicurezza. */
     overflow-anchor: none;
+    color-scheme: light dark;
 }
 
 body {
     font-family: var(--font-body);
     text-align: center;
-    color: var(--text);
+    color: var(--ink);
     margin: 0;
     padding: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     overflow-anchor: none;
-    background:
-        radial-gradient(1100px 620px at 14% -8%, var(--bg-glow-1), transparent 60%),
-        radial-gradient(900px 560px at 108% 12%, var(--bg-glow-2), transparent 55%),
-        var(--bg);
-    background-attachment: fixed;
+    background: var(--paper);
+    transition: background-color .2s ease, color .2s ease;
 }
 
 ::selection {
-    background: var(--gold-soft-bg);
-    color: var(--gold-strong);
+    background: var(--accent-soft-bg);
+    color: var(--accent-strong);
 }
 
 /* scrollbar sottile e coerente col tema, ovunque */
 * {
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    scrollbar-color: var(--rule) transparent;
 }
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-pill); }
-*::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+*::-webkit-scrollbar-thumb { background: var(--rule); border-radius: var(--radius-pill); }
+*::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   HEADER — sostituisce i vecchi controlli "flottanti" (mute, streak, banner
+   di esplorazione) che su schermi stretti finivano sopra la scacchiera,
+   impedendo di muovere i pezzi nelle prime righe. Essendo ora un elemento
+   normale nel flusso della pagina, la scacchiera parte sempre SOTTO di lui:
+   il bug non può più verificarsi, qualunque sia la modalità o lo schermo.
+   ========================================================================== */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    background: var(--paper-panel);
+    border-bottom: solid 1px var(--rule);
+}
+
+.app-header-slot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+}
+
+.app-header-center {
+    flex: 1;
+    justify-content: center;
+}
+
+.icon-btn {
+    background: transparent;
+    border: solid 1px var(--rule);
+    color: var(--ink-muted);
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    margin: 0;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    box-shadow: none;
+}
+
+.icon-btn:hover {
+    color: var(--ink);
+    border-color: var(--accent-dim);
+    transform: none;
+    filter: none;
+}
+
+.icon-btn:active {
+    transform: scale(.92);
+    box-shadow: none;
+}
+
+/* --- Selettore di modalità: tre destinazioni esplicite invece di un unico
+   pulsante che le cicla — si vede subito dove si è e si arriva ovunque in un
+   tocco, invece di dover ripassare per le altre. --- */
+.mode-switch {
+    display: flex;
+    background: var(--paper-panel-alt);
+    border: solid 1px var(--rule);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 2px;
+}
+
+.mode-switch-btn {
+    background: transparent;
+    color: var(--ink-muted);
+    border: none;
+    margin: 0;
+    padding: 7px 13px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    border-radius: var(--radius-pill);
+    box-shadow: none;
+    transition: background-color .15s var(--ease-out), color .15s ease;
+}
+
+.mode-switch-btn:hover {
+    color: var(--ink);
+    transform: none;
+    filter: none;
+}
+
+.mode-switch-btn.active {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-card);
+}
+
+.mode-switch-btn.active:hover {
+    color: var(--accent-ink);
+}
+
+/* --- STREAK: badge discreto, non più medaglia dorata con glow --- */
+.drill-streak {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px 6px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--paper-panel-alt);
+    border: solid 1px var(--rule);
+    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 15px;
+    color: var(--ink-muted);
+    transition: border-color .25s ease, color .25s ease, background-color .25s ease;
+}
+
+body.mode-drill .drill-streak {
+    display: inline-flex;
+}
+
+.drill-streak-flame {
+    font-size: 15px;
+    opacity: .45;
+    display: inline-block;
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+.drill-streak.lit {
+    border-color: var(--brass);
+    background: var(--brass-soft-bg);
+    color: var(--brass-ink);
+}
+
+:root[data-theme="dark"] .drill-streak.lit {
+    color: var(--brass-strong);
+}
+
+.drill-streak.lit .drill-streak-flame {
+    opacity: 1;
+}
+
+#drill-streak-count {
+    color: inherit;
+}
+
+.drill-streak.wobble .drill-streak-flame {
+    animation: crownBounce .4s var(--ease-bounce);
+}
+
+.drill-streak.wobble {
+    animation: streakPulse .4s var(--ease-out);
+}
+
+@keyframes crownBounce {
+    0% { transform: scale(1) rotate(0deg); }
+    35% { transform: scale(1.3) rotate(-8deg); }
+    65% { transform: scale(1.08) rotate(6deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes streakPulse {
+    0% { box-shadow: 0 0 0 0 var(--brass-soft-bg); }
+    100% { box-shadow: 0 0 0 8px rgba(163, 121, 47, 0); }
+}
+
+/* Confetti canvas per i milestone dello streak — invisibile e ignora i click */
+#confetti-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    pointer-events: none;
+}
+
+/* --- Banner "stai esplorando" — ora vive nell'header, in flusso --- */
+.exploration-banner {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px 6px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--plum);
+    color: var(--plum-ink);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+body.mode-read.exploring .exploration-banner {
+    display: inline-flex;
+    animation: pop .25s var(--ease-bounce);
+}
+
+.exploration-reset-btn {
+    background: rgba(255, 255, 255, .8);
+    color: var(--plum);
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: var(--radius-pill);
+    box-shadow: none;
+}
+
+.exploration-reset-btn:hover {
+    filter: brightness(1.05);
+    transform: none;
+}
+
+/* --- Barra strumenti del DRILL: sostituisce il vecchio pulsante "flip"
+   fisso in basso a sinistra — anche questo ora prende spazio vero nel
+   layout invece di galleggiare sopra la scacchiera. --- */
+.drill-toolbar {
+    display: none;
+    justify-content: center;
+    padding: 4px 16px 14px;
+}
+
+body.mode-drill .drill-toolbar {
+    display: flex;
+}
+
+.drill-flip-btn {
+    background: var(--paper-panel-alt);
+    color: var(--ink-muted);
+    border: solid 1px var(--rule);
+    box-shadow: none;
+}
 
 /* --- LAYOUT PRINCIPALE --- */
 .board-and-controls {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 28px;
+    padding: 24px;
     gap: 24px;
     max-width: 1160px;
     margin: 0 auto;
@@ -123,17 +397,15 @@ body {
     display: flex;
     justify-content: center;
     align-items: stretch;
-    height: min(78vh, calc(100vw - 60px));
-    filter: drop-shadow(0 18px 40px rgba(0,0,0,.5));
+    height: min(70vh, calc(100vw - 60px));
 }
 
 #board-container {
-    width: min(78vh, calc(100vw - 60px));
-    height: min(78vh, calc(100vw - 60px));
+    width: min(70vh, calc(100vw - 60px));
+    height: min(70vh, calc(100vw - 60px));
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 0 0 1px var(--border), var(--shadow-card);
-    transition: box-shadow .3s ease;
+    box-shadow: 0 0 0 1px var(--rule), var(--shadow-card);
 }
 
 .tabs {
@@ -144,62 +416,55 @@ body {
     align-items: center;
 }
 
-/* --- TAB SWITCHER: segmented control giocoso --- */
+/* --- SELETTORE TAB: come i separatori a linguetta di un raccoglitore —
+   quella selezionata resta "attaccata" al foglio sotto (stesso bordo/sfondo
+   del pannello), le altre restano leggermente arretrate. --- */
 .tab-switcher {
     width: 100%;
     display: flex;
     justify-content: center;
-    background-color: var(--panel);
-    border: solid 1px var(--border);
-    border-radius: var(--radius-pill);
-    box-sizing: border-box;
-    overflow: hidden;
-    padding: 4px;
-    gap: 4px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-inset-line);
+    gap: 2px;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 1;
 }
 
 .tab {
-    padding: 10px 10px;
-    background-color: transparent;
-    color: var(--text-faint-solid);
+    padding: 10px 8px 9px;
+    background-color: var(--paper-panel-alt);
+    color: var(--ink-faint);
     user-select: none;
     box-sizing: border-box;
     width: calc(100% / 3);
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: .07em;
-    border-radius: var(--radius-pill);
-    transition: background-color .18s var(--ease-out), color .18s ease, transform .12s ease;
+    letter-spacing: .02em;
+    border: solid 1px var(--rule);
+    border-bottom: none;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: background-color .15s var(--ease-out), color .15s ease;
 }
 
 .tab.selected {
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    color: var(--gold-ink);
-    box-shadow: 0 4px 14px -4px rgba(240, 185, 61, .55);
-    animation: tabPop .22s var(--ease-bounce);
+    background: var(--paper-panel);
+    color: var(--accent);
+    border-color: var(--rule);
+    box-shadow: 0 -2px 0 0 var(--accent) inset;
 }
 
 .tab:hover {
     cursor: pointer;
-    color: var(--text);
+    color: var(--ink);
 }
 
 .tab.selected:hover {
-    color: var(--gold-ink);
-}
-
-@keyframes tabPop {
-    0% { transform: scale(.9); }
-    55% { transform: scale(1.04); }
-    100% { transform: scale(1); }
+    color: var(--accent);
 }
 
 .tab-content {
-    padding: 22px;
-    background-color: var(--panel);
-    border: solid 1px var(--border);
+    padding: 20px;
+    background-color: var(--paper-panel);
+    border: solid 1px var(--rule);
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -209,10 +474,9 @@ body {
        bug per cui commenti lunghi facevano crescere la pagina e scattava lo
        scroll-anchoring del browser. Il pannello ora è una "carta" stabile,
        come in un'app da mobile — solo il suo contenuto scorre. */
-    height: min(78vh, calc(100vw - 60px));
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card), var(--shadow-inset-line);
-    animation: fadeSlideIn .25s var(--ease-out);
+    height: min(70vh, calc(100vw - 60px));
+    border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+    box-shadow: var(--shadow-card);
     overflow-y: auto;
     overscroll-behavior: contain;
 }
@@ -247,10 +511,10 @@ body {
     padding-bottom: 64px;
 }
 
-/* --- EVAL BAR: "coach meter" --- */
+/* --- EVAL BAR --- */
 .eval-bar-wrapper {
-    width: 26px;
-    background-color: #0a0d15;
+    width: 24px;
+    background-color: var(--ink);
     border-radius: var(--radius-sm);
     margin-right: 14px;
     position: relative;
@@ -259,7 +523,7 @@ body {
     flex-direction: column;
     justify-content: flex-end;
     transition: transform 0.2s ease;
-    box-shadow: 0 0 0 1px var(--border), var(--shadow-card);
+    box-shadow: 0 0 0 1px var(--rule), var(--shadow-card);
 }
 
 .eval-bar-wrapper.flipped {
@@ -268,7 +532,7 @@ body {
 
 .eval-bar-fill {
     width: 100%;
-    background: linear-gradient(180deg, #ffffff, #d7dde4);
+    background: linear-gradient(180deg, #fdf8ee, #e3d8c2);
     height: 50%;
     transition: height 0.35s var(--ease-out);
 }
@@ -277,7 +541,7 @@ body {
     position: absolute;
     width: 100%;
     text-align: center;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 800;
     font-family: var(--font-mono);
     z-index: 2;
@@ -287,68 +551,71 @@ body {
 
 .eval-bar-text.top {
     top: 0;
-    color: var(--text);
+    color: var(--paper-panel);
 }
 
 .eval-bar-text.bottom {
     bottom: 0;
-    color: #0a0d15;
+    color: #2b2013;
 }
 
 .eval-bar-wrapper.flipped .eval-bar-text {
     transform: scaleY(-1);
 }
 
-/* --- BOTTONI --- */
+/* --- BOTTONI ---
+   Piatti, con bordo netto stile "timbro" invece del rilievo 3D gommoso di
+   prima: si abbassano leggermente al click, niente ombre a più strati. */
 button {
     padding: 10px 18px;
     margin: 4px;
     cursor: pointer;
-    border: none;
+    border: solid 1px var(--accent-dim);
     border-radius: var(--radius-sm);
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    color: var(--gold-ink);
+    background: var(--accent);
+    color: var(--accent-ink);
     font-weight: 700;
     font-family: inherit;
     font-size: 13px;
     letter-spacing: .01em;
-    box-shadow: 0 3px 0 0 #a87c1f, 0 6px 14px -6px rgba(240,185,61,.5);
-    transition: transform .12s var(--ease-bounce), box-shadow .12s ease, filter .12s ease;
+    box-shadow: var(--shadow-card);
+    transition: transform .1s var(--ease-out), box-shadow .12s ease, filter .12s ease, background-color .12s ease;
 }
 
 button:hover {
-    filter: brightness(1.06);
-    transform: translateY(-1px);
+    filter: brightness(1.08);
 }
 
 button:active {
-    transform: translateY(2px) scale(0.98);
-    box-shadow: 0 1px 0 0 #a87c1f, 0 2px 6px -3px rgba(240,185,61,.5);
+    transform: translateY(1px);
+    box-shadow: none;
 }
 
 button.danger {
-    background: linear-gradient(160deg, var(--danger-strong), #d24545);
-    color: #fff;
-    box-shadow: 0 3px 0 0 #a13030, 0 6px 14px -6px rgba(255,90,90,.5);
+    background: var(--danger);
+    border-color: var(--danger-strong);
+    color: var(--danger-ink);
 }
 
 button.secondary {
-    background: var(--panel-alt);
-    color: var(--text-muted);
-    border: solid 1px var(--border);
+    background: var(--paper-panel-alt);
+    color: var(--ink-muted);
+    border: solid 1px var(--rule);
     box-shadow: none;
     align-self: flex-start;
 }
 
 button.secondary:hover {
-    color: var(--text);
-    border-color: var(--gold-dim);
+    color: var(--ink);
+    border-color: var(--accent-dim);
+    filter: none;
 }
 
 button:disabled,
 .delete-subtree-btn:disabled {
-    background: #262c40;
-    color: var(--text-faint-solid);
+    background: var(--paper-panel-alt);
+    border-color: var(--rule);
+    color: var(--ink-faint);
     cursor: not-allowed;
     filter: none;
     transform: none;
@@ -358,197 +625,16 @@ button:disabled,
 #engine-info {
     margin-top: 14px;
     padding: 10px 12px;
-    background: var(--panel-alt);
-    border: solid 1px var(--border-soft);
+    background: var(--paper-panel-alt);
+    border: solid 1px var(--rule-soft);
     border-radius: var(--radius-sm);
     font-size: 12.5px;
-    color: var(--text-muted);
+    color: var(--ink-muted);
     text-align: left;
     display: block;
     font-family: var(--font-mono);
     line-height: 1.7;
     min-height: 56px;
-}
-
-/* --- Pulsanti fissi fuori dal pannello tab --- */
-#mode-btn {
-    user-select: none;
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    color: var(--gold-ink);
-    padding: 10px 18px;
-    font-size: 12px;
-    min-width: 60px;
-    width: fit-content;
-    white-space: nowrap;
-    border-radius: var(--radius-pill);
-    font-weight: 800;
-    letter-spacing: .04em;
-    position: fixed;
-    bottom: 14px;
-    right: 14px;
-    text-align: center;
-    z-index: 100;
-    box-shadow: 0 4px 0 0 #a87c1f, 0 10px 22px -8px rgba(240,185,61,.6);
-    transition: transform .15s var(--ease-bounce);
-}
-
-#mode-btn:hover {
-    cursor: pointer;
-    transform: scale(1.05) translateY(-1px);
-}
-
-#mode-btn:active {
-    transform: scale(0.95) translateY(2px);
-    box-shadow: 0 1px 0 0 #a87c1f, 0 4px 10px -6px rgba(240,185,61,.6);
-}
-
-.mute-btn {
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    z-index: 100;
-    user-select: none;
-    cursor: pointer;
-    font-size: 17px;
-    padding: 8px 11px;
-    border-radius: var(--radius-pill);
-    background-color: var(--panel);
-    border: solid 1px var(--border);
-    box-shadow: var(--shadow-card);
-    transition: transform .15s var(--ease-bounce);
-}
-
-.mute-btn:hover {
-    transform: scale(1.08);
-}
-
-#btn-flip-drill {
-    display: none;
-    position: fixed;
-    bottom: 14px;
-    left: 14px;
-    z-index: 100;
-    padding: 10px 18px;
-    cursor: pointer;
-    user-select: none;
-    border-radius: var(--radius-pill);
-}
-
-body.mode-drill #btn-flip-drill {
-    display: inline-block;
-}
-
-/* --- STREAK: la "corona" che cresce e brilla, elemento firma dell'app --- */
-.drill-streak {
-    display: none;
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 100;
-    padding: 8px 16px 8px 10px;
-    border-radius: var(--radius-pill);
-    background: linear-gradient(160deg, var(--panel-raised), var(--panel));
-    border: solid 1px var(--border);
-    font-weight: 800;
-    font-family: var(--font-display);
-    font-size: 17px;
-    align-items: center;
-    gap: 7px;
-    box-shadow: var(--shadow-card);
-    transition: box-shadow .25s ease, border-color .25s ease;
-}
-
-body.mode-drill .drill-streak {
-    display: inline-flex;
-}
-
-.drill-streak-flame {
-    font-size: 18px;
-    filter: grayscale(1) opacity(.4) brightness(.9);
-    transition: filter .25s ease, transform .25s ease;
-    display: inline-block;
-}
-
-.drill-streak.lit .drill-streak-flame {
-    filter: grayscale(0) opacity(1) drop-shadow(0 0 6px rgba(240,185,61,.8));
-}
-
-.drill-streak.lit {
-    border-color: var(--gold-dim);
-    box-shadow: var(--shadow-card), 0 0 0 1px rgba(240,185,61,.25), 0 0 22px -6px rgba(240,185,61,.55);
-}
-
-#drill-streak-count {
-    color: var(--gold-strong);
-}
-
-.drill-streak.wobble .drill-streak-flame {
-    animation: crownBounce .4s var(--ease-bounce);
-}
-
-.drill-streak.wobble {
-    animation: streakPulse .4s var(--ease-out);
-}
-
-@keyframes crownBounce {
-    0% { transform: scale(1) rotate(0deg); }
-    35% { transform: scale(1.35) rotate(-8deg); }
-    65% { transform: scale(1.1) rotate(6deg); }
-    100% { transform: scale(1) rotate(0deg); }
-}
-
-@keyframes streakPulse {
-    0% { box-shadow: var(--shadow-card), 0 0 0 0 rgba(240,185,61,.6); }
-    100% { box-shadow: var(--shadow-card), 0 0 0 10px rgba(240,185,61,0); }
-}
-
-/* Confetti canvas per i milestone dello streak — invisibile e ignora i click */
-#confetti-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 250;
-    pointer-events: none;
-}
-
-/* Banner "stai esplorando, non è salvato" */
-.exploration-banner {
-    display: none;
-    position: fixed;
-    top: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 110;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 8px 7px 16px;
-    border-radius: var(--radius-pill);
-    background: linear-gradient(160deg, rgba(156,139,255,.22), rgba(156,139,255,.1));
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: solid 1px rgba(156,139,255,.45);
-    color: var(--violet-strong);
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-    box-shadow: var(--shadow-card);
-}
-
-body.mode-read.exploring .exploration-banner {
-    display: inline-flex;
-    animation: pop .25s var(--ease-bounce);
-}
-
-.exploration-reset-btn {
-    background: var(--violet-strong);
-    color: var(--violet-ink);
-    padding: 5px 12px;
-    font-size: 12px;
-    border-radius: var(--radius-pill);
-    box-shadow: none;
-}
-
-.exploration-reset-btn:hover {
-    filter: brightness(1.08);
 }
 
 @media (max-aspect-ratio: 1/1) {
@@ -576,8 +662,8 @@ body.mode-read.exploring .exploration-banner {
     gap: 8px;
 }
 
-/* Il commento va per primo nel markup: card in stile "nota del coach", con
-   bordo dorato a sinistra per distinguerla subito dal resto. */
+/* Il commento va per primo nel markup: come l'annotazione a margine di un
+   quaderno, con un filo di bordeaux a sinistra per distinguerla subito. */
 .move-comment {
     text-align: left;
     margin-bottom: 14px;
@@ -586,12 +672,12 @@ body.mode-read.exploring .exploration-banner {
 }
 
 .cb-comment-empty {
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     font-style: italic;
     font-size: 13px;
     padding: 12px 14px;
-    background: var(--panel-alt);
-    border: dashed 1px var(--border);
+    background: var(--paper-panel-alt);
+    border: dashed 1px var(--rule);
     border-radius: var(--radius-sm);
 }
 
@@ -600,7 +686,7 @@ body.mode-read.exploring .exploration-banner {
 .cb-comment-line,
 .cb-comment-content {
     padding: 3px 0 3px 14px;
-    border-left: solid 3px var(--gold-dim);
+    border-left: solid 3px var(--rule);
     margin-bottom: 6px;
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -610,45 +696,44 @@ body.mode-read.exploring .exploration-banner {
     font-family: var(--font-display);
     font-size: 19px;
     font-weight: 700;
-    color: var(--text);
-    border-left-color: var(--gold-strong);
+    color: var(--ink);
+    border-left-color: var(--accent);
 }
 
 /* "Unknown opening": nessun dato trovato nel database ECO né scritto a mano.
    Resta leggibile ma visivamente "spento" — non deve sembrare un titolo vero
    quanto piuttosto un placeholder onesto. */
 .cb-comment-opening-fallback {
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     font-weight: 500;
     font-style: italic;
-    border-left-color: var(--border);
+    border-left-color: var(--rule);
 }
 
 .cb-comment-variation {
+    font-family: var(--font-display);
     font-size: 13.5px;
     font-style: italic;
-    color: var(--violet-strong);
-    border-left-color: var(--violet);
+    color: var(--plum);
+    border-left-color: var(--plum);
 }
 
 .cb-comment-line {
     font-family: var(--font-mono);
     font-size: 12.5px;
-    color: var(--text-muted);
+    color: var(--ink-muted);
 }
 
 .cb-comment-content {
     font-size: 14px;
-    color: var(--text);
-    line-height: 1.55;
+    color: var(--ink);
+    line-height: 1.6;
     white-space: pre-wrap;
-    border-left-color: var(--border);
+    border-left-color: var(--rule);
 }
 
-/* Freccette di navigazione — pillola fissa in basso, stile chess.com ma con
-   gerarchia visiva chiara: avanti/indietro (le più usate) sono i due
-   pulsanti pieni al centro; inizio/fine linea sono "ghost" più discreti ai
-   lati, per non competere visivamente con le due azioni principali. */
+/* Freccette di navigazione — pillola fissa in basso: avanti/indietro sono i
+   due pulsanti pieni al centro; inizio/fine linea sono "ghost" ai lati. */
 .nav-buttons {
     position: fixed;
     bottom: 14px;
@@ -659,16 +744,16 @@ body.mode-read.exploring .exploration-banner {
     justify-content: center;
     gap: 6px;
     z-index: 90;
-    background-color: var(--panel);
-    border: solid 1px var(--border);
+    background-color: var(--paper-panel);
+    border: solid 1px var(--rule);
     border-radius: var(--radius-pill);
     padding: 6px;
     box-shadow: var(--shadow-card);
 }
 
 .nav-btn {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     min-width: 0;
     padding: 0;
     margin: 0;
@@ -678,48 +763,43 @@ body.mode-read.exploring .exploration-banner {
     border: none;
     border-radius: 50%;
     box-shadow: none;
-    transition: transform .12s var(--ease-bounce), background-color .15s ease, color .15s ease;
+    transition: transform .1s var(--ease-out), background-color .15s ease, color .15s ease;
 }
 
 .nav-btn svg {
     display: block;
 }
 
-/* Indietro/Avanti: le azioni che si usano davvero in continuazione — più
-   grandi, riempite d'oro, sempre "a portata di pollice" su mobile. */
 .nav-btn-primary {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    color: var(--gold-ink);
-    box-shadow: 0 3px 0 0 #a87c1f, 0 6px 14px -6px rgba(240,185,61,.5);
+    width: 46px;
+    height: 46px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: solid 1px var(--accent-dim);
 }
 
 .nav-btn-primary:hover {
-    filter: brightness(1.06);
-    transform: translateY(-1px);
+    filter: brightness(1.08);
 }
 
 .nav-btn-primary:active {
-    transform: translateY(2px) scale(0.96);
-    box-shadow: 0 1px 0 0 #a87c1f, 0 2px 6px -3px rgba(240,185,61,.5);
+    transform: translateY(1px) scale(0.97);
 }
 
-/* Inizio/Fine linea: azioni "di salto", occasionali — discrete finché non
-   servono, per non rubare peso visivo alle due frecce centrali. */
 .nav-btn-ghost {
     background-color: transparent;
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
+    border: solid 1px transparent;
 }
 
 .nav-btn-ghost:hover {
-    background-color: var(--panel-raised);
-    color: var(--text);
+    background-color: var(--paper-panel-alt);
+    color: var(--ink);
     transform: none;
 }
 
 .nav-btn-ghost:active {
-    transform: scale(.88);
+    transform: scale(.9);
 }
 
 .move-list-header {
@@ -736,36 +816,35 @@ body.mode-read.exploring .exploration-banner {
 .toggle-arrows-btn {
     font-size: 10.5px;
     padding: 5px 10px;
-    background-color: var(--panel-alt);
-    color: var(--text-faint-solid);
-    border: solid 1px var(--border);
+    background-color: var(--paper-panel-alt);
+    color: var(--ink-faint);
+    border: solid 1px var(--rule);
     box-shadow: none;
     border-radius: var(--radius-pill);
 }
 
 .toggle-arrows-btn:hover {
     transform: none;
-    color: var(--text-muted);
+    color: var(--ink-muted);
+    filter: none;
 }
 
 .toggle-arrows-btn.active {
-    color: var(--gold-ink);
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    border-color: transparent;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border-color: var(--accent-dim);
 }
 
-/* Move-list ordinata e cliccabile. Le varianti non sono più testo tra
-   parentesi in linea (facile da perdere in partite con più diramazioni): ogni
-   variante è un blocco a sé, rientrato e con un bordo colorato in base alla
-   profondità — basta seguire il rientro/colore per capire subito "dove si è"
-   nell'albero, invece di contare le parentesi. */
+/* Move-list: le varianti sono blocchi rientrati a sé (non più testo tra
+   parentesi in linea, illeggibile con più diramazioni annidate) — basta
+   seguire il rientro/colore del bordo per capire subito "dove si è". */
 .move-list {
     text-align: left;
     font-family: var(--font-mono);
     font-size: 13px;
-    color: var(--text-muted);
-    background-color: var(--panel-alt);
-    border: solid 1px var(--border-soft);
+    color: var(--ink-muted);
+    background-color: var(--paper-panel-alt);
+    border: solid 1px var(--rule-soft);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
     margin-top: 8px;
@@ -774,15 +853,10 @@ body.mode-read.exploring .exploration-banner {
 }
 
 .move-list-empty {
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     font-style: italic;
 }
 
-/* Un "blocco linea" è una sequenza continua di mosse (la mainline a un dato
-   livello, oppure il corpo di una variante): fluisce a capo automaticamente
-   come dei chip, e ogni variante figlia forza a sua volta un a-capo pieno
-   (flex-basis:100%) restando comunque annidata visivamente nello stesso
-   blocco padre. */
 .move-list-line {
     display: flex;
     flex-wrap: wrap;
@@ -792,7 +866,7 @@ body.mode-read.exploring .exploration-banner {
 }
 
 .move-list-number {
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     padding: 0 2px 0 5px;
     user-select: none;
 }
@@ -806,21 +880,23 @@ body.mode-read.exploring .exploration-banner {
     align-items: center;
     gap: 3px;
     padding: 2px 7px;
-    border-radius: var(--radius-sm);
-    color: var(--text);
+    border-radius: 3px;
+    color: var(--ink);
     cursor: pointer;
-    transition: background-color .12s ease, transform .1s ease;
+    transition: background-color .12s ease;
 }
 
 .move-list-move:hover {
-    background-color: var(--gold-soft-bg);
+    background-color: var(--accent-soft-bg);
 }
 
+/* La mossa attiva è "passata all'evidenziatore", non un pulsante dorato:
+   coerente col resto del quaderno — sottolineatura piena color ottone. */
 .move-list-move.active {
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    color: var(--gold-ink);
-    font-weight: 800;
-    animation: pop .2s var(--ease-bounce);
+    background: var(--brass-soft-bg);
+    box-shadow: inset 0 -2px 0 0 var(--brass);
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .move-list-nag-icon {
@@ -837,51 +913,51 @@ body.mode-read.exploring .exploration-banner {
     align-items: baseline;
     margin: 3px 0 3px 8px;
     padding: 3px 0 3px 10px;
-    border-left: solid 2px var(--violet);
+    border-left: solid 2px var(--plum);
     font-size: 12.5px;
 }
 
 .move-list-branch-marker {
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     font-size: 11px;
     margin-right: 3px;
     user-select: none;
 }
 
 .move-list-variation .move-list-move {
-    color: var(--text-muted);
+    color: var(--ink-muted);
 }
 
 .move-list-variation .move-list-move.active {
-    color: var(--gold-ink);
+    color: var(--ink);
 }
 
 .move-list-variation.depth-2 {
     margin-left: 18px;
-    border-left-color: var(--violet-strong);
+    border-left-color: var(--plum-strong);
     opacity: .92;
 }
 
 .move-list-variation.depth-3 {
     margin-left: 28px;
-    border-left-color: var(--gold-dim);
+    border-left-color: var(--brass);
     opacity: .86;
     font-size: 12px;
 }
 
 .move-list-variation.depth-4 {
     margin-left: 36px;
-    border-left-color: var(--border);
+    border-left-color: var(--rule);
     opacity: .8;
     font-size: 12px;
 }
 
-/* --- TAB EDIT --- */
+/* --- TAB NOTES (annotazione mosse + NAG) --- */
 
 .field-label {
     text-align: left;
     font-size: 10.5px;
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     text-transform: uppercase;
     letter-spacing: .08em;
     font-weight: 700;
@@ -900,22 +976,22 @@ body.mode-read.exploring .exploration-banner {
     padding: 12px;
     font-family: var(--font-mono);
     font-size: 13px;
-    background-color: var(--panel-alt);
-    color: var(--text);
-    border: solid 1px var(--border);
+    background-color: var(--paper-panel-alt);
+    color: var(--ink);
+    border: solid 1px var(--rule);
     border-radius: var(--radius-sm);
     transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 .comment-editor:focus {
     outline: none;
-    border-color: var(--gold-dim);
-    box-shadow: 0 0 0 3px var(--gold-soft-bg);
+    border-color: var(--accent-dim);
+    box-shadow: 0 0 0 3px var(--accent-soft-bg);
 }
 
 .comment-editor:disabled {
-    color: var(--text-faint-solid);
-    background-color: #171c2b;
+    color: var(--ink-faint);
+    background-color: var(--paper-panel);
 }
 
 .edit-danger-zone {
@@ -924,64 +1000,70 @@ body.mode-read.exploring .exploration-banner {
     gap: 8px;
     margin-top: 20px;
     padding-top: 16px;
-    border-top: solid 1px var(--border-soft);
+    border-top: solid 1px var(--rule-soft);
 }
 
+/* --- NAG: badge rotondi generati da Chessboard.js (colore+simbolo), qui
+   ingranditi e con un anello di carta attorno — più leggibili, più simili a
+   un vero timbro di correzione che a un'icona d'app. --- */
 .nag-palette {
     display: flex;
     flex-wrap: wrap;
-    gap: 9px;
+    gap: 10px;
 }
 
 .nag-palette.disabled {
-    opacity: .35;
+    opacity: .4;
     pointer-events: none;
 }
 
 .nag-btn {
-    width: 42px;
-    height: 42px;
-    padding: 0;
+    width: 46px;
+    height: 46px;
+    padding: 3px;
     margin: 0;
     border-radius: 50%;
-    background-color: var(--panel-alt);
-    border: solid 2px var(--nag-color, var(--border));
+    background-color: var(--paper-panel-alt);
+    border: solid 2px var(--rule);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: none;
-    transition: transform .12s var(--ease-bounce), box-shadow .15s ease;
-}
-
-.nag-btn:hover {
-    transform: scale(1.1);
-}
-
-.nag-btn:active {
-    transform: scale(0.9);
+    transition: transform .12s var(--ease-bounce), border-color .15s ease, box-shadow .15s ease;
 }
 
 .nag-btn img {
     width: 100%;
     height: 100%;
+    border-radius: 50%;
+}
+
+.nag-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--nag-color, var(--accent-dim));
+}
+
+.nag-btn:active {
+    transform: scale(0.92);
 }
 
 .nag-btn.selected {
-    box-shadow: 0 0 0 3px var(--nag-color, var(--gold-strong));
+    border-color: var(--nag-color, var(--accent));
+    box-shadow: 0 0 0 3px var(--paper-panel), 0 0 0 5px var(--nag-color, var(--accent));
     animation: pop .22s var(--ease-bounce);
 }
 
 .nag-btn-clear {
-    background-color: var(--panel-raised);
-    color: var(--text-muted);
+    background-color: var(--paper-panel-raised);
+    color: var(--ink-muted);
     font-weight: bold;
-    border-color: var(--border);
+    border-color: var(--rule);
 }
 
-/* --- TAB EXPORT --- */
+/* --- TAB FILE (import/export PGN) --- */
 
 input[type="file"] {
-    color: var(--text-muted);
+    color: var(--ink-muted);
     font-size: 13px;
 }
 
@@ -997,18 +1079,18 @@ input[type="file"] {
     align-items: center;
     gap: 5px;
     font-size: 11.5px;
-    color: var(--text-faint-solid);
+    color: var(--ink-faint);
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }
 
 .pgn-clean-toggle-label:hover {
-    color: var(--text-muted);
+    color: var(--ink-muted);
 }
 
 .pgn-clean-toggle-label input[type="checkbox"] {
-    accent-color: var(--gold-strong);
+    accent-color: var(--accent);
     width: 13px;
     height: 13px;
     margin: 0;
@@ -1022,9 +1104,9 @@ input[type="file"] {
     padding: 12px;
     font-family: var(--font-mono);
     font-size: 12px;
-    background-color: var(--panel-alt);
-    color: var(--text-muted);
-    border: solid 1px var(--border);
+    background-color: var(--paper-panel-alt);
+    color: var(--ink-muted);
+    border: solid 1px var(--rule);
     border-radius: var(--radius-sm);
     resize: vertical;
 }
@@ -1051,9 +1133,9 @@ input[type="file"] {
 .pgn-gate-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(8, 10, 16, .82);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background-color: rgba(20, 14, 6, .55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -1068,8 +1150,8 @@ input[type="file"] {
 }
 
 .pgn-gate-box {
-    background: linear-gradient(160deg, var(--panel-raised), var(--panel));
-    border: solid 1px var(--border);
+    background: var(--paper-panel-raised);
+    border: solid 1px var(--rule);
     border-radius: var(--radius-lg);
     padding: 30px 26px;
     max-width: 360px;
@@ -1083,12 +1165,12 @@ input[type="file"] {
     font-size: 20px;
     font-weight: 700;
     margin: 0 0 8px;
-    color: var(--text);
+    color: var(--ink);
 }
 
 .pgn-gate-hint {
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--ink-muted);
     margin: 0 0 18px;
     line-height: 1.5;
 }
@@ -1096,21 +1178,16 @@ input[type="file"] {
 .pgn-gate-file-label {
     display: inline-block;
     padding: 10px 20px;
-    background: linear-gradient(160deg, var(--gold-strong), var(--gold-dim));
-    color: var(--gold-ink);
+    background: var(--accent);
+    color: var(--accent-ink);
     font-weight: 700;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    box-shadow: 0 3px 0 0 #a87c1f, 0 6px 14px -6px rgba(240,185,61,.5);
-    transition: transform .12s var(--ease-bounce);
+    box-shadow: var(--shadow-card);
 }
 
 .pgn-gate-file-label:hover {
-    transform: translateY(-1px);
-}
-
-.pgn-gate-file-label:active {
-    transform: translateY(2px);
+    filter: brightness(1.08);
 }
 
 .pgn-gate-file {
@@ -1150,12 +1227,12 @@ body.mode-drill #board-container {
 }
 
 @keyframes drillReady {
-    0%, 100% { box-shadow: 0 0 0 1px var(--border), var(--shadow-card); }
-    50% { box-shadow: 0 0 0 1px var(--violet), var(--shadow-card), 0 0 30px -6px rgba(156,139,255,.45); }
+    0%, 100% { box-shadow: 0 0 0 1px var(--rule), var(--shadow-card); }
+    50% { box-shadow: 0 0 0 1px var(--plum), var(--shadow-card), 0 0 26px -8px var(--plum); }
 }
 
 /* ==========================================================================
-   GAMIFICATION: animazioni condivise
+   ANIMAZIONI CONDIVISE
    ========================================================================== */
 
 @keyframes fadeIn {
