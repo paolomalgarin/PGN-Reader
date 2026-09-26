@@ -20,6 +20,8 @@ class Chessboard {
                 lastMove: 'rgba(155, 199, 0, 0.41)',
                 suggestion: 'rgba(0, 0, 0, 0.25)',
                 customHighlight: 'rgba(255, 0, 0, 0.5)',
+                arrow: 'rgba(255,170,0,0.8)',
+                availableMoveArrow: 'rgba(130, 160, 185, 0.4)',
                 // Colore di evidenziazione (e sfondo del badge di default) per ciascun NAG,
                 // es. { '$1': '#3aa655' }. Se assente, si usa Chessboard.DEFAULT_NAG_INFO.
                 nag: {}
@@ -825,13 +827,18 @@ class Chessboard {
         if (info && info.icon === 'star') {
             glyph = `<polygon points="${this._starPoints(50, 51, 28, 11)}" fill="${inkColor}"/>`;
         } else if (info && info.icon === 'thumbsup') {
-            // Forme semplici invece di un profilo disegnato a mano: molto più
-            // riconoscibile a piccola dimensione — polsino, pugno chiuso e
-            // pollice inclinato verso l'alto.
-            glyph = `<g fill="${inkColor}">`
-                + `<rect x="52" y="68" width="27" height="15" rx="4"/>`
-                + `<rect x="50" y="33" width="25" height="41" rx="10"/>`
-                + `<rect x="27" y="15" width="17" height="35" rx="8" transform="rotate(-30 35.5 32.5)"/>`
+            // SVG fornito dall'utente (icona "hand-thumbs-up-fill" di Bootstrap
+            // Icons, viewBox nativo 0 0 16 16): scalata e centrata nel badge.
+            glyph = `<g fill="${inkColor}" transform="translate(18,18) scale(4)">`
+                + `<path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965`
+                + `.22.816.533 2.511.062 4.51a9.84 9.84 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21`
+                + `.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733.058.119.103.242.138.363`
+                + `.077.27.113.567.113.856 0 .289-.036.586-.113.856-.039.135-.09.273-.16.404`
+                + `.169.387.107.819-.003 1.148a3.163 3.163 0 0 1-.488.901c.054.152.076.312.076.465 `
+                + `0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218`
+                + `a4.82 4.82 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722`
+                + `C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41`
+                + `.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z"/>`
                 + `</g>`;
         } else {
             // "Faux bold": oltre al font-weight, si applica al testo uno stroke dello
@@ -1140,7 +1147,7 @@ class Chessboard {
             this.arrowsMap.get(arrowId).remove();
             this.arrowsMap.delete(arrowId);
         } else {
-            const path = this._createArrowPath(from, to, 'rgba(255,170,0,0.8)');
+            const path = this._createArrowPath(from, to, this.config.colors.arrow);
             this.arrowsLayer.appendChild(path);
             this.arrowsMap.set(arrowId, path);
         }
@@ -1175,7 +1182,7 @@ class Chessboard {
         this.clearArrows();
         arrows.forEach(({ from, to }) => {
             const arrowId = `${from}-${to}`;
-            const path = this._createArrowPath(from, to, 'rgba(255,170,0,0.8)');
+            const path = this._createArrowPath(from, to, this.config.colors.arrow);
             this.arrowsLayer.appendChild(path);
             this.arrowsMap.set(arrowId, path);
         });
@@ -1190,7 +1197,7 @@ class Chessboard {
      * @param {{from: String, to: String}[]} moves
      * @param {String} [color]
      */
-    showAvailableMoveArrows(moves = [], color = 'rgba(130, 160, 185, 0.4)') {
+    showAvailableMoveArrows(moves = [], color = this.config.colors.availableMoveArrow) {
         this.clearAvailableMoveArrows();
         moves.forEach(({ from, to }) => {
             const path = this._createArrowPath(from, to, color);
@@ -1425,12 +1432,20 @@ class Chessboard {
 // sovrascrivere il colore (config.colors.nag) e/o fornire una propria immagine
 // (config.images.nags) per uno o più codici, senza dover ridefinire l'intera mappa.
 Chessboard.DEFAULT_NAG_INFO = {
-    '$1':  { symbol: '!',  color: '#5c8bb0' }, // buona mossa — blu "Great" di chess.com
-    '$2':  { symbol: '?',  color: '#e6912c' }, // errore/mistake — arancione "Mistake" di chess.com
-    '$3':  { symbol: '!!', color: '#1baca6' }, // mossa brillante — teal "Brilliant" di chess.com
-    '$4':  { symbol: '??', color: '#fa412d' }, // svista/blunder — rosso "Blunder" di chess.com
-    '$5':  { symbol: '!?', color: '#3593d6' }, // mossa interessante
-    '$6':  { symbol: '?!', color: '#f0c33d' }, // mossa dubbia/imprecisione — giallo "Inaccuracy" di chess.com
+    // Prima i NAG che hanno un corrispondente diretto in chess.com, in
+    // ordine di gravità decrescente (dalla mossa migliore alla peggiore):
+    // brillante > great > best > excellent > inaccuratezza > errore > blunder.
+    '$3':   { symbol: '!!',     color: '#1baca6' }, // brilliant
+    '$1':   { symbol: '!',      color: '#5c8bb0' }, // great
+    '$102': { icon: 'star',     color: '#81b64c' }, // best move (chess.com-style)
+    '$101': { icon: 'thumbsup', color: '#96bc4b' }, // excellent move (chess.com-style)
+    '$6':   { symbol: '?!',     color: '#f0c33d' }, // inaccuratezza
+    '$2':   { symbol: '?',      color: '#e6912c' }, // errore/mistake
+    '$4':   { symbol: '??',     color: '#fa412d' }, // svista/blunder
+
+    // Poi le annotazioni PGN standard che chess.com non ha, in ordine di
+    // "gravità" via via meno legata a un giudizio buono/cattivo.
+    '$5':  { symbol: '!?',  color: '#3593d6' }, // mossa interessante
     '$7':  { symbol: '➡',  color: '#6fa06f' }, // mossa forzata/unica
     '$10': { symbol: '=',  color: '#8a8a8a' }, // posizione pari
     '$13': { symbol: '∞',  color: '#5c7cba' }, // posizione poco chiara
@@ -1439,14 +1454,7 @@ Chessboard.DEFAULT_NAG_INFO = {
     '$16': { symbol: '±',  color: '#4c8f3c' }, // vantaggio bianco
     '$17': { symbol: '∓',  color: '#a34a4a' }, // vantaggio nero
     '$18': { symbol: '+−', color: '#2f6e26' }, // bianco vincente
-    '$19': { symbol: '−+', color: '#7a2e2e' }, // nero vincente
-
-    // Due aggiunte "custom" (non standard PGN, come le usa chess.com nella sua
-    // UI): $101/$102 sono numeri fuori dal range standard proprio per non
-    // sovrapporsi a nessun significato ufficiale della tabella NAG. Verdi
-    // allineati a "Excellent"/"Best" di chess.com per familiarità.
-    '$101': { icon: 'thumbsup', color: '#96bc4b' }, // excellent move (chess.com-style)
-    '$102': { icon: 'star',     color: '#81b64c' }  // best move (chess.com-style) — verde storico di chess.com
+    '$19': { symbol: '−+', color: '#7a2e2e' }  // nero vincente
 };
 
 // Chessboard.js resta uno script "classico" (non un modulo ES) per poter fare
