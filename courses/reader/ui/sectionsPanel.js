@@ -97,6 +97,33 @@ function buildEditControls(entry) {
     const box = document.createElement('span');
     box.className = 'outline-edit-controls';
 
+    const siblings = siblingsOf(entry.path);
+    const idx = entry.path[entry.path.length - 1];
+
+    const up = document.createElement('button');
+    up.type = 'button';
+    up.className = 'outline-icon-btn';
+    up.title = 'Move up';
+    up.textContent = '▲';
+    up.disabled = idx === 0;
+    up.addEventListener('click', (e) => {
+        e.stopPropagation();
+        reorder(entry.path, -1);
+    });
+    box.appendChild(up);
+
+    const down = document.createElement('button');
+    down.type = 'button';
+    down.className = 'outline-icon-btn';
+    down.title = 'Move down';
+    down.textContent = '▼';
+    down.disabled = idx === siblings.length - 1;
+    down.addEventListener('click', (e) => {
+        e.stopPropagation();
+        reorder(entry.path, 1);
+    });
+    box.appendChild(down);
+
     const rename = document.createElement('button');
     rename.type = 'button';
     rename.className = 'outline-icon-btn';
@@ -154,11 +181,40 @@ function buildEditControls(entry) {
     return box;
 }
 
-function removeAtPath(path) {
+function parentChildrenOf(path) {
     const parentPath = path.slice(0, -1);
-    const idx = path[path.length - 1];
     const parent = parentPath.length ? resolvePath(state.course, parentPath) : { children: state.course.sections };
-    if (parent && parent.children) parent.children.splice(idx, 1);
+    return parent ? parent.children : null;
+}
+
+function siblingsOf(path) {
+    return parentChildrenOf(path) || [];
+}
+
+/**
+ * Scambia il nodo puntato da `path` con quello immediatamente prima (-1) o
+ * dopo (+1) tra i suoi fratelli. Niente cambio di livello (non si può
+ * "spostare dentro/fuori" una sezione da qui, solo riordinare tra pari) —
+ * per spostare qualcosa in un'altra sezione, per ora, cancella e ricrea.
+ *
+ * @param {number[]} path
+ * @param {-1|1} delta
+ */
+function reorder(path, delta) {
+    const siblings = parentChildrenOf(path);
+    if (!siblings) return;
+
+    const idx = path[path.length - 1];
+    const targetIdx = idx + delta;
+    if (targetIdx < 0 || targetIdx >= siblings.length) return;
+
+    [siblings[idx], siblings[targetIdx]] = [siblings[targetIdx], siblings[idx]];
+    notifyAndRender();
+}
+
+function removeAtPath(path) {
+    const siblings = parentChildrenOf(path);
+    if (siblings) siblings.splice(path[path.length - 1], 1);
 }
 
 function samePath(a, b) {
