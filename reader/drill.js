@@ -63,6 +63,7 @@ export function maybePlayComputerMove(board) {
 
     if (!state.tree.isAtRoot() && state.tree.current.children.length === 0) {
         registerLineEnd();
+        board.clearPremoves(); // erano pianificate per la linea appena finita
         board.setPosition(state.tree.startingFen || 'start');
         state.tree.goToRoot();
         if (afterMoveFn) afterMoveFn();
