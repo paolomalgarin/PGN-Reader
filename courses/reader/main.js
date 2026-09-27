@@ -7,7 +7,7 @@ import { playMoveSound, playSound } from "../../reader/sound.js";
 import { initFileTab } from "./ui/fileTab.js";
 import { initSectionsPanel } from "./ui/sectionsPanel.js";
 import { initEditTab } from "./ui/editTab.js";
-import { initAnalysisTab } from "./ui/analysisTab.js";
+import { initAnalysisTab, handleBoardMove } from "./ui/analysisTab.js";
 
 // Stesso identico setup del reader principale (vedi /reader/main.js): la
 // board (Chessboard.js) e il motore di validazione (chess.js) sono la stessa
@@ -62,9 +62,13 @@ function navigate(path, index, opts = {}) {
     if (!rebuildToIndex(board, line, state.course.meta.startingFen, index)) return;
 
     setPosition(path, index);
+    handleBoardMove();
 
     if (opts.autoSkip && state.mode === 'STUDY') {
-        autoAdvanceSkipBlock(board, line, index, (newIndex) => setPosition(path, newIndex));
+        autoAdvanceSkipBlock(board, line, index, (newIndex) => {
+            setPosition(path, newIndex);
+            handleBoardMove();
+        });
     }
 }
 
@@ -86,6 +90,20 @@ function stopRecording() {
     setRecording(null);
     const line = currentLine();
     if (line) rebuildToIndex(board, line, state.course.meta.startingFen, state.currentIndex);
+}
+
+/**
+ * Orienta la board in base a meta.side ('white' = bianco in basso, 'black' =
+ * nero in basso — utile per un corso di repertorio col Nero, es. la
+ * Caro-Kann). flipBoard() è un TOGGLE (vedi Chessboard.js), quindi lo si
+ * richiama solo se l'orientamento attuale non corrisponde già a quello
+ * voluto — mai in automatico ad ogni notifyChange, altrimenti un flip
+ * manuale fatto solo per dare un'occhiata verrebbe subito annullato dal
+ * primo tasto premuto altrove.
+ */
+function applyCourseOrientation() {
+    const wantFlipped = state.course.meta.side === 'black';
+    if (board.isFlipped !== wantFlipped) board.flipBoard();
 }
 
 // --- Routing delle mosse giocate sulla board ---
@@ -130,6 +148,7 @@ board.setOnMoveCallback((move) => {
         if (move.san === expected.move) {
             setPosition(state.currentPath, state.currentIndex + 1);
             playMoveSound(move);
+            handleBoardMove();
         } else {
             board.undoSilently();
             board.flashSquareError(move.to);
@@ -142,6 +161,7 @@ board.setOnMoveCallback((move) => {
     line.moves.push(createMove(move.san));
     setPosition(state.currentPath, state.currentIndex + 1);
     playMoveSound(move);
+    handleBoardMove();
 });
 
 // --- Wiring UI ---
@@ -151,13 +171,19 @@ board.setOnMoveCallback((move) => {
     document.getElementById(tabId).addEventListener('click', () => switchTab(tabId, contentId));
 });
 
-initFileTab();
+initFileTab(applyCourseOrientation);
 initSectionsPanel((path, index) => navigate(path, index, { autoSkip: true }));
 initEditTab(board, currentLine, stopRecording);
 initAnalysisTab(board, () => { /* la posizione è già stata ricostruita da analysisTab stesso */ });
 
 document.getElementById('btn-nav-back').addEventListener('click', goBack);
 document.getElementById('btn-nav-forward').addEventListener('click', goForward);
+document.getElementById('btn-flip').addEventListener('click', () => {
+    board.flipBoard();
+    handleBoardMove();
+});
+
+applyCourseOrientation();
 
 document.getElementById('mode-toggle-btn').addEventListener('click', () => {
     if (!state.course.meta.editable) return;
