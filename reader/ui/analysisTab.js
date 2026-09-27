@@ -65,7 +65,9 @@ export function flipBoard() {
     updateEvalBar(lastEvalData);
 
     if (state.mode === 'DRILL') {
-        setHumanColor(!board.isFlipped);
+        const humanIsWhite = !board.isFlipped;
+        setHumanColor(humanIsWhite);
+        board.setPremoveColor(humanIsWhite ? 'w' : 'b');
         maybePlayComputerMove(board);
     }
 }
