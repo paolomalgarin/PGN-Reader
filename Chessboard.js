@@ -22,6 +22,7 @@ class Chessboard {
                 customHighlight: 'rgba(255, 0, 0, 0.5)',
                 arrow: 'rgba(255,170,0,0.8)',
                 availableMoveArrow: 'rgba(130, 160, 185, 0.4)',
+                premove: 'rgba(214, 40, 40, 0.5)',
                 // Colore di evidenziazione (e sfondo del badge di default) per ciascun NAG,
                 // es. { '$1': '#3aa655' }. Se assente, si usa Chessboard.DEFAULT_NAG_INFO.
                 nag: {}
@@ -81,6 +82,18 @@ class Chessboard {
         this._nagImageCache = new Map();
 
         this.drawingArrowFrom = null;
+
+        // --- PREMOSSE ---
+        // premoveColor: il colore ('w'/'b') per cui è permesso selezionare un
+        // pezzo e "giocare" una mossa anche quando non è il suo turno — null
+        // disattiva del tutto la funzionalità (usata solo in modalità DRILL).
+        // premoveQueue: le mosse così pianificate, in ordine, senza limite di
+        // lunghezza: vengono tentate una alla volta (mai tutte insieme) ad
+        // ogni cambio di turno che riporta la mano a premoveColor. La prima
+        // che risulta illegale nella posizione realmente raggiunta scarta
+        // anche tutte quelle rimaste in coda dopo di lei.
+        this.premoveColor = null;
+        this.premoveQueue = [];
 
         // Variables Drag & Drop e Promozione
         this.isDragging = false;
@@ -196,6 +209,13 @@ class Chessboard {
                dopo — la transition qui sotto anima il transform tornato a
                zero, facendolo scivolare visivamente da una casella all'altra. */
             .cb-piece-sliding { transition: transform .2s cubic-bezier(.22, .61, .36, 1); }
+            .cb-piece-landed-wobble { animation: cb-piece-land-wobble .22s ease-out; }
+            @keyframes cb-piece-land-wobble {
+                0% { transform: scale(1); }
+                35% { transform: scale(1.1, 0.9); }
+                65% { transform: scale(0.96, 1.03); }
+                100% { transform: scale(1); }
+            }
             
             .cb-drag-ghost { position: fixed; z-index: 1000; pointer-events: none; object-fit: contain; }
             .cb-hidden-piece { opacity: 0; }
@@ -364,7 +384,7 @@ class Chessboard {
 
             if (this.selectedSquare === sqName) {
                 this.togglingSquare = sqName;
-            } else if (pezzo && pezzo.color === this.game.turn()) {
+            } else if (pezzo && (pezzo.color === this.game.turn() || pezzo.color === this.premoveColor)) {
                 this.selectedSquare = sqName;
                 this.togglingSquare = null;
             } else {
@@ -476,6 +496,12 @@ class Chessboard {
     // --- LOGICA DI MOVIMENTO E PROMOZIONE ---
 
     _attemptMove(from, to) {
+        const pieceAtFrom = this.game.get(from);
+        if (pieceAtFrom && this.premoveColor && pieceAtFrom.color === this.premoveColor
+            && pieceAtFrom.color !== this.game.turn()) {
+            return this._queuePremove(from, to);
+        }
+
         const moves = this.game.moves({ verbose: true });
         const moveOptions = moves.filter(m => m.from === from && m.to === to);
 
@@ -495,6 +521,77 @@ class Chessboard {
 
         this._executeMove({ from, to });
         return true;
+    }
+
+    /**
+     * Accoda una premossa: nessuna validazione qui (la posizione in cui verrà
+     * davvero giocata non è ancora nota, essendo l'avversario a dover ancora
+     * rispondere) — si limita a ricordare from/to. Ne può accumulare quante se
+     * ne vogliono, senza limite: verranno tentate una alla volta, nell'ordine
+     * in cui sono state pianificate, ad ogni turno che torna a premoveColor
+     * (vedi _flushNextPremove). Una premossa che risulta illegale nella
+     * posizione realmente raggiunta scarta anche tutte quelle rimaste dopo.
+     *
+     * @param {String} from
+     * @param {String} to
+     * @returns {boolean} sempre true (accodare non può "fallire")
+     */
+    _queuePremove(from, to) {
+        if (from !== to) this.premoveQueue.push({ from, to });
+        this.selectedSquare = null;
+        this.render();
+        return true;
+    }
+
+    /**
+     * Tenta la premossa più vecchia in coda, ORA che è realmente il turno di
+     * premoveColor: se il from/to pianificato è ancora una mossa legale nella
+     * posizione attuale la gioca (esattamente come una mossa vera trascinata
+     * in questo istante — stesso _executeMove, stesso onMoveCallback: chi
+     * ascolta non ha bisogno di sapere che si tratta di una premossa
+     * "liberata"). Se non lo è più, scarta l'intera coda: una premossa
+     * pianificata aveva senso solo in quella sequenza precisa.
+     */
+    _flushNextPremove() {
+        if (!this.premoveQueue.length) return;
+        const next = this.premoveQueue.shift();
+
+        const legal = this.game.moves({ verbose: true })
+            .some(m => m.from === next.from && m.to === next.to);
+
+        if (!legal) {
+            this.premoveQueue = [];
+            this.render();
+            this.flashSquareError(next.from);
+            return;
+        }
+
+        this._executeMove({ from: next.from, to: next.to, promotion: next.promotion || 'q' });
+    }
+
+    /**
+     * Abilita/disabilita le premosse per un colore (usata solo in modalità
+     * DRILL, per il colore giocato dall'utente). Passare null le disattiva e
+     * scarta subito qualunque premossa già pianificata.
+     *
+     * @param {'w'|'b'|null} color
+     */
+    setPremoveColor(color) {
+        const normalized = color || null;
+        if (normalized !== this.premoveColor) this.premoveQueue = [];
+        this.premoveColor = normalized;
+        this.render();
+    }
+
+    /** Scarta tutte le premosse pianificate senza giocarne nessuna. */
+    clearPremoves() {
+        if (!this.premoveQueue.length) return;
+        this.premoveQueue = [];
+        this.render();
+    }
+
+    hasPremoves() {
+        return this.premoveQueue.length > 0;
     }
 
     _showPromotionMenu(from, to) {
@@ -546,6 +643,12 @@ class Chessboard {
             this.currentNag = null; // il NAG era legato alla mossa precedente, ora non più valido
             this.render();
             if (this.onMoveCallback) this.onMoveCallback(move);
+
+            // Il turno è appena tornato a premoveColor: se aveva già pianificato
+            // una mossa, questo è esattamente il momento di tentarla.
+            if (this.premoveColor && this.game.turn() === this.premoveColor && this.premoveQueue.length) {
+                this._flushNextPremove();
+            }
         }
     }
 
@@ -664,6 +767,14 @@ class Chessboard {
         this.clearAvailableMoveArrows();
         this.clearCustomHighlights();
         this.render();
+
+        // Come in _executeMove: la mossa del pc in modalità drill arriva qui
+        // (via goForward/rebuildAndJump, non _executeMove) — è comunque un
+        // cambio di turno vero e proprio, quindi va controllato allo stesso modo.
+        if (this.premoveColor && this.game.turn() === this.premoveColor && this.premoveQueue.length) {
+            this._flushNextPremove();
+        }
+
         return true;
     }
 
@@ -708,6 +819,17 @@ class Chessboard {
 
                     if (this.customHighlights.has(sqName)) {
                         this._addHighlight(cell, this.config.colors.customHighlight, 'custom');
+                    }
+
+                    // Premosse pianificate: casella di partenza E di arrivo di
+                    // ciascuna, in rosso — così si vede a colpo d'occhio l'intera
+                    // sequenza che si è messa in coda, non solo l'ultima.
+                    if (this.premoveQueue.length) {
+                        this.premoveQueue.forEach(pm => {
+                            if (pm.from === sqName || pm.to === sqName) {
+                                this._addHighlight(cell, this.config.colors.premove, 'custom');
+                            }
+                        });
                     }
 
                     if (this.currentNag && this.currentNag.square === sqName) {
@@ -772,6 +894,18 @@ class Chessboard {
                                     img.style.transform = 'translate(0, 0)';
                                 });
                             });
+
+                            // Un mini "wobble" quando lo scivolamento finisce — non prima:
+                            // sovrapporre subito una seconda animazione sullo stesso transform
+                            // (scale) romperebbe la transition della posizione. Se nel
+                            // frattempo si fa un'altra mossa, questo <img> viene rimosso dal
+                            // DOM (ogni render() ricrea tutti i pezzi da zero): l'evento non
+                            // scatta più e l'animazione resta semplicemente interrotta a metà,
+                            // esattamente il comportamento voluto per non dover mai aspettare.
+                            img.addEventListener('transitionend', () => {
+                                img.classList.remove('cb-piece-sliding');
+                                img.classList.add('cb-piece-landed-wobble');
+                            }, { once: true });
                         }
                     }
                 }
