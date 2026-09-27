@@ -277,9 +277,12 @@ function applyStateEffects() {
         // Si riparte sempre assumendo che l'utente giochi il bianco (può
         // cambiarlo flippando la scacchiera); se a questo punto tocca comunque
         // al pc (es. si rientra in drill a metà di una linea), gioca subito.
-        setHumanColor(!board.isFlipped);
+        const humanIsWhite = !board.isFlipped;
+        setHumanColor(humanIsWhite);
+        board.setPremoveColor(humanIsWhite ? 'w' : 'b');
         maybePlayComputerMove(board);
     } else {
+        board.setPremoveColor(null);
         cancelPendingComputerMove();
     }
 }
