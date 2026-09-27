@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGN Courses</title>
+    <link rel="shortcut icon" href="https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg"
+        type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Riusa le variabili/stile di base del reader principale: font, palette,
+         classi comuni (tab, tab-switcher, nav-btn, secondary, danger...) -
+         index.css qui sotto contiene SOLO ciò che è specifico dei corsi. -->
+    <link rel="stylesheet" href="../index.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="courses-layout">
+
+        <div class="game-area">
+            <div id="board-container"></div>
+
+            <div class="nav-buttons">
+                <button id="btn-nav-back" class="nav-btn nav-btn-primary" title="Back">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                </button>
+                <button id="btn-nav-forward" class="nav-btn nav-btn-primary" title="Forward">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-switcher">
+                <div class="tab" id="file-tab">FILE</div>
+                <div class="tab selected" id="analysis-tab">ANALYSIS</div>
+                <div class="tab" id="edit-tab">EDIT</div>
+            </div>
+
+            <!-- TAB: FILE -->
+            <div id="file" class="tab-content" style="display: none;">
+                <label class="field-label" for="pgnc-file-input">Load a course (.pgnc)</label>
+                <input type="file" id="pgnc-file-input" accept=".pgnc,application/json,text/plain,*/*" />
+                <p id="pgnc-import-error" class="error-text" hidden></p>
+
+                <label class="field-label" for="course-title-input">Course title</label>
+                <input type="text" id="course-title-input" class="text-field" placeholder="Untitled course" />
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="course-editable-toggle" checked />
+                    Editable (uncheck before sharing a finished course)
+                </label>
+
+                <div class="export-buttons">
+                    <button id="btn-new-course" class="secondary">New empty course</button>
+                    <button id="btn-download-pgnc">Download .pgnc</button>
+                </div>
+            </div>
+
+            <!-- TAB: ANALYSIS (Study) -->
+            <div id="analysis" class="tab-content">
+                <div id="current-line-title" class="current-line-title"></div>
+
+                <div id="preview-banner" class="preview-banner" hidden>
+                    <span id="preview-banner-label"></span>
+                    <button id="btn-back-to-line" class="preview-back-btn">◀ Back to line</button>
+                </div>
+
+                <div id="move-text" class="move-text"></div>
+            </div>
+
+            <!-- TAB: EDIT -->
+            <div id="edit" class="tab-content" style="display: none;">
+                <div id="recording-banner" class="recording-banner" hidden>
+                    <span id="recording-banner-label"></span>
+                    <button id="btn-stop-recording" class="preview-back-btn">■ Stop recording</button>
+                </div>
+
+                <div id="edit-empty" class="move-text-empty">
+                    Play a move on the board (or pick a line from the outline) to start editing it.
+                </div>
+
+                <div id="edit-form" hidden>
+                    <label class="field-label" for="move-text-editor">Move notes</label>
+                    <textarea id="move-text-editor" class="comment-editor" spellcheck="false"
+                        placeholder="Explain this move to the student..."></textarea>
+
+                    <button id="btn-insert-preview" class="secondary" type="button">+ Insert line preview</button>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="move-skip-toggle" />
+                        Skippable (auto-played for the student, no notes shown)
+                    </label>
+
+                    <label class="field-label">NAG</label>
+                    <div id="nag-palette" class="nag-palette"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outline: tutte le sezioni/linee del corso, annidate e scorrevoli -->
+        <div class="sections-column">
+            <div class="sections-header">
+                <label class="field-label">Course outline</label>
+                <div class="sections-add-buttons">
+                    <button id="btn-add-root-section" class="outline-icon-btn" title="Add top-level section">+§</button>
+                    <button id="btn-add-root-line" class="outline-icon-btn" title="Add top-level line">+♟</button>
+                </div>
+            </div>
+            <div id="sections-panel" class="sections-panel"></div>
+        </div>
+
+    </div>
+
+    <div id="mode-toggle-btn" class="mode-toggle-btn">EDIT</div>
+
+    <script src="../Chessboard.js"></script>
+    <script src="reader/main.js" type="module"></script>
+</body>
+
+</html>
