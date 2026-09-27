@@ -121,6 +121,12 @@ html {
        interno (vedi .tab-content), questo è solo una rete di sicurezza. */
     overflow-anchor: none;
     color-scheme: light dark;
+    /* Disattiva il doppio-tap-to-zoom di Safari/Chrome mobile: toccando in
+       fretta più volte le freccette di navigazione (o facendo mosse veloci
+       sulla scacchiera) il browser lo interpretava come un doppio tap e
+       zoomava lo schermo. "manipulation" toglie SOLO quel gesto, lasciando
+       intatto lo zoom "vero" a due dita per chi ne ha bisogno. */
+    touch-action: manipulation;
 }
 
 body {
