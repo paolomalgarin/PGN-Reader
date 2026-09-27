@@ -128,6 +128,15 @@
     background: rgba(255, 255, 255, 0.12);
 }
 
+.outline-icon-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+.outline-icon-btn:disabled:hover {
+    background: none;
+}
+
 .outline-icon-danger:hover {
     background: rgba(220, 70, 70, 0.35);
 }
