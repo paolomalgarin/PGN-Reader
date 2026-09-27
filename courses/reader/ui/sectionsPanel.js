@@ -3,11 +3,13 @@ import { flattenOutline, createSection, createLine, resolvePath } from "../Cours
 
 let container = null;
 let onNavigate = null; // iniettata da main.js: (path, index) => void, gestisce anche l'autoplay skip
+let addButtons = null;
 const collapsed = new Set(); // path.join('.') delle Section chiuse
 
 export function initSectionsPanel(navigateFn) {
     container = document.getElementById('sections-panel');
     onNavigate = navigateFn;
+    addButtons = document.getElementById('sections-add-buttons');
 
     document.getElementById('btn-add-root-section').addEventListener('click', () => {
         state.course.sections.push(createSection('New section'));
@@ -30,6 +32,7 @@ function notifyAndRender() {
 
 function render() {
     if (!container) return;
+    if (addButtons) addButtons.hidden = state.mode !== 'EDIT';
     container.innerHTML = '';
 
     const entries = flattenOutline(state.course);
