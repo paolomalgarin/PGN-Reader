@@ -20,6 +20,12 @@
     <div class="courses-layout">
 
         <div class="game-area">
+            <div class="eval-bar-wrapper" id="eval-bar">
+                <div class="eval-bar-text top" id="eval-text-top"></div>
+                <div class="eval-bar-fill" id="eval-fill"></div>
+                <div class="eval-bar-text bottom" id="eval-text-bottom">0.0</div>
+            </div>
+
             <div id="board-container"></div>
 
             <div class="nav-buttons">
@@ -29,7 +35,11 @@
                 <button id="btn-nav-forward" class="nav-btn nav-btn-primary" title="Forward">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
                 </button>
+                <button id="btn-flip" class="nav-btn nav-btn-ghost" title="Flip board">⇅</button>
             </div>
+
+            <div id="engine-info">Engine off</div>
+            <button id="btn-analysis">Start Analysis</button>
         </div>
 
         <div class="tabs">
@@ -41,21 +51,25 @@
 
             <!-- TAB: FILE -->
             <div id="file" class="tab-content" style="display: none;">
-                <label class="field-label" for="pgnc-file-input">Load a course (.pgnc)</label>
-                <input type="file" id="pgnc-file-input" accept=".pgnc,application/json,text/plain,*/*" />
+                <label class="field-label" for="pgnc-file-input">Load a course (.pgnce or .pgnc)</label>
+                <input type="file" id="pgnc-file-input" accept=".pgnc,.pgnce,application/json,text/plain,*/*" />
                 <p id="pgnc-import-error" class="error-text" hidden></p>
 
                 <label class="field-label" for="course-title-input">Course title</label>
                 <input type="text" id="course-title-input" class="text-field" placeholder="Untitled course" />
 
-                <label class="checkbox-label">
-                    <input type="checkbox" id="course-editable-toggle" checked />
-                    Editable (uncheck before sharing a finished course)
-                </label>
+                <label class="field-label" for="course-side-select">Studying as</label>
+                <select id="course-side-select" class="text-field">
+                    <option value="white">White (White at the bottom)</option>
+                    <option value="black">Black (Black at the bottom)</option>
+                </select>
+
+                <span id="course-editable-badge" class="editable-badge">Editable (.pgnce)</span>
 
                 <div class="export-buttons">
                     <button id="btn-new-course" class="secondary">New empty course</button>
-                    <button id="btn-download-pgnc">Download .pgnc</button>
+                    <button id="btn-download-pgnce" class="secondary" title="Keeps every editing tool available next time it's opened">Save editable (.pgnce)</button>
+                    <button id="btn-download-pgnc" title="Locked: opens straight into Study mode, no Edit tab">Export for students (.pgnc)</button>
                 </div>
             </div>
 
