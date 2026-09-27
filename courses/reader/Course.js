@@ -11,7 +11,7 @@
 //
 // {
 //   version: 1,
-//   meta: { title, editable, startingFen },
+//   meta: { title, editable, startingFen, side },   // side: 'white' | 'black'
 //   progress: { sectionPath: [0,1], moveIndex: 3 },
 //   sections: [
 //     { type: 'section', title, children: [ Section | Line, ... ] },
@@ -27,13 +27,19 @@
 // testo e persino skip proprio), ma MAI un campo `previews` a loro volta:
 // una preview non può contenere un'altra preview, per tenere la UI di
 // registrazione semplice e senza livelli di annidamento da gestire.
+//
+// meta.editable NON è (più) una spunta libera: è derivato dall'ESTENSIONE del
+// file caricato/esportato — .pgnce = editabile, .pgnc = corso "chiuso" per lo
+// studente (vedi ui/fileTab.js). Viene comunque salvato anche nel JSON così
+// lo stato resta coerente subito dopo la creazione di un corso nuovo, prima
+// di qualunque salvataggio su disco.
 
 export const PGNC_VERSION = 1;
 
 export function createEmptyCourse(title = 'Untitled course') {
     return {
         version: PGNC_VERSION,
-        meta: { title, editable: true, startingFen: null },
+        meta: { title, editable: true, startingFen: null, side: 'white' },
         progress: { sectionPath: [], moveIndex: 0 },
         sections: [],
     };
@@ -70,6 +76,7 @@ export function parseCourse(json) {
     if (typeof course.meta.title !== 'string') course.meta.title = 'Untitled course';
     course.meta.editable = course.meta.editable !== false;
     course.meta.startingFen = course.meta.startingFen || null;
+    course.meta.side = course.meta.side === 'black' ? 'black' : 'white';
     course.progress = course.progress || { sectionPath: [], moveIndex: 0 };
     course.progress.sectionPath = course.progress.sectionPath || [];
     course.progress.moveIndex = course.progress.moveIndex || 0;
