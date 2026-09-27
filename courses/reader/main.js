@@ -194,8 +194,9 @@ let lastMode = null;
 
 function applyStateEffects() {
     document.body.className = 'mode-' + state.mode.toLowerCase();
-    document.getElementById('mode-toggle-btn').textContent = state.mode;
-    document.getElementById('mode-toggle-btn').hidden = !state.course.meta.editable;
+    const modeBtn = document.getElementById('mode-toggle-btn');
+    modeBtn.textContent = state.mode === 'EDIT' ? '👁 Preview as student' : '✎ Resume editing';
+    modeBtn.hidden = !state.course.meta.editable;
 
     // L'Edit tab è nascosto in STUDY (via CSS, vedi index.css) — se era
     // quella la tab selezionata, forza ANALYSIS. Controllato solo al
