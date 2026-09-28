@@ -4,33 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Deve stare PRIMA di qualunque URL relativo nella pagina (i due
-         <script> in fondo, i due <link> qui sotto): sposta la "base" di
-         risoluzione degli URL relativi dalla cartella /courses/ alla radice
-         del sito. Chessboard.js istanzia il motore con
-         new Worker('engine/stockfish-...js'), un path relativo che il
-         browser risolve SEMPRE rispetto all'URL della pagina (mai rispetto
-         a dove sta lo script che lo chiama) — da /courses/ cercherebbe
-         /courses/engine/... che non esiste. Con questo <base> torna a
-         risolversi correttamente su /engine/... alla radice, esattamente
-         come nella pagina del reader principale. Di conseguenza, negli
-         attributi src/href qui sotto i path vanno scritti relativi alla
-         RADICE del sito, non più alla cartella courses. -->
+    <!-- Sposta la base di risoluzione degli URL relativi dalla cartella
+         /courses/ alla radice del sito. Serve perché Chessboard.js fa
+         new Worker('engine/stockfish-...js'), un path relativo che il browser
+         risolve SEMPRE rispetto all'URL della pagina (mai di dove sta lo
+         script che lo chiama): da /courses/ cercherebbe /courses/engine/...
+         Deve stare prima di qualunque altro URL relativo, quindi gli
+         attributi src/href qui sotto sono scritti relativi alla RADICE. -->
     <base href="../">
     <title>PGN Courses</title>
     <link rel="shortcut icon" href="https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg"
         type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Riusa le variabili/stile di base del reader principale: font, palette,
-         classi comuni (tab, tab-switcher, nav-btn, secondary, danger...) -
-         courses/index.css qui sotto contiene SOLO ciò che è specifico dei corsi. -->
+    <!-- Palette, tema chiaro/scuro e componenti condivisi arrivano da
+         /index.css; courses/index.css contiene SOLO ciò che è specifico dei corsi. -->
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="courses/index.css">
+    <script>
+        // Stesso script del reader principale (stessa chiave in localStorage:
+        // il tema scelto in una pagina vale anche nell'altra). Applicato PRIMA
+        // che il CSS venga dipinto, per evitare il lampo del tema sbagliato.
+        (function () {
+            try {
+                var saved = localStorage.getItem('pgn-reader-theme');
+                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) { /* localStorage non disponibile: resta il tema chiaro */ }
+        })();
+    </script>
 </head>
 
-<body>
-    <div class="courses-layout">
+<body class="mode-edit">
+    <header class="app-header">
+        <div class="app-header-slot app-header-start">
+            <button id="btn-theme" class="icon-btn" title="Toggle light/dark theme" aria-label="Toggle theme"></button>
+            <button id="btn-mute" class="icon-btn" title="Toggle sounds" aria-label="Toggle sounds">🔊</button>
+        </div>
+
+        <div class="app-header-slot app-header-center">
+            <span id="header-course-title" class="header-course-title"></span>
+        </div>
+
+        <div class="app-header-slot app-header-end">
+            <!-- Visibile solo per i corsi editabili (.pgnce): un corso chiuso
+                 (.pgnc) si apre direttamente in modalità studente. -->
+            <div class="mode-switch" id="mode-switch">
+                <button type="button" class="mode-switch-btn" data-mode="EDIT">EDIT</button>
+                <button type="button" class="mode-switch-btn" data-mode="STUDY">PREVIEW</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="board-and-controls courses">
 
         <div class="game-area">
             <div class="eval-bar-wrapper" id="eval-bar">
@@ -43,12 +69,56 @@
         </div>
 
         <div class="tabs">
-            <button id="mode-toggle-btn" class="mode-toggle-btn">👁 Preview as student</button>
-
             <div class="tab-switcher">
-                <div class="tab" id="file-tab">FILE</div>
                 <div class="tab selected" id="analysis-tab">ANALYSIS</div>
-                <div class="tab" id="edit-tab">EDIT</div>
+                <div class="tab" id="edit-tab">NOTES</div>
+                <div class="tab" id="file-tab">FILE</div>
+            </div>
+
+            <!-- TAB: ANALYSIS -->
+            <div id="analysis" class="tab-content">
+                <div id="line-heading"></div>
+
+                <div id="preview-banner" class="preview-banner" hidden>
+                    <span id="preview-banner-label"></span>
+                    <button id="btn-back-to-line" class="preview-back-btn">◀ Back to line</button>
+                </div>
+
+                <div id="move-text" class="move-comment"></div>
+
+                <div class="buttons">
+                    <button id="btn-analysis">Show evaluation</button>
+                    <button id="btn-flip">Flip board</button>
+                </div>
+
+            </div>
+
+            <!-- TAB: NOTES (edit) -->
+            <div id="edit" class="tab-content" style="display: none;">
+                <div id="recording-banner" class="recording-banner" hidden>
+                    <span id="recording-banner-label"></span>
+                    <button id="btn-stop-recording" class="preview-back-btn">■ Stop recording</button>
+                </div>
+
+                <div id="edit-empty" class="cb-comment-empty">
+                    Play a move on the board (or pick a line from the outline) to start editing it.
+                </div>
+
+                <div id="edit-form" hidden>
+                    <label class="field-label" for="move-text-editor">Move notes</label>
+                    <textarea id="move-text-editor" class="comment-editor" spellcheck="false"
+                        placeholder="Explain this move to the student..."></textarea>
+
+                    <button id="btn-insert-preview" class="secondary" type="button">+ Insert line preview</button>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="move-skip-toggle" />
+                        Skippable (auto-played for the student, no notes shown)
+                    </label>
+
+                    <label class="field-label">NAG</label>
+                    <div id="nag-palette" class="nag-palette"></div>
+                </div>
             </div>
 
             <!-- TAB: FILE -->
@@ -71,78 +141,43 @@
                 <div class="export-buttons">
                     <button id="btn-new-course" class="secondary">New empty course</button>
                     <button id="btn-download-pgnce" class="secondary" title="Keeps every editing tool available next time it's opened">Save editable (.pgnce)</button>
-                    <button id="btn-download-pgnc" title="Locked: opens straight into Study mode, no Edit tab">Export for students (.pgnc)</button>
-                </div>
-            </div>
-
-            <!-- TAB: ANALYSIS (Study) -->
-            <div id="analysis" class="tab-content">
-                <div class="nav-buttons">
-                    <button id="btn-nav-back" class="nav-btn nav-btn-primary" title="Back">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
-                    </button>
-                    <button id="btn-nav-forward" class="nav-btn nav-btn-primary" title="Forward">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-                    </button>
-                    <button id="btn-flip" class="nav-btn nav-btn-ghost" title="Flip board">⇅</button>
-                </div>
-
-                <div id="current-line-title" class="current-line-title"></div>
-
-                <div id="preview-banner" class="preview-banner" hidden>
-                    <span id="preview-banner-label"></span>
-                    <button id="btn-back-to-line" class="preview-back-btn">◀ Back to line</button>
-                </div>
-
-                <div id="move-text" class="move-text"></div>
-
-                <div class="analysis-engine-row">
-                    <button id="btn-analysis">Start Analysis</button>
-                    <div id="engine-info">Engine off</div>
-                </div>
-            </div>
-
-            <!-- TAB: EDIT -->
-            <div id="edit" class="tab-content" style="display: none;">
-                <div id="recording-banner" class="recording-banner" hidden>
-                    <span id="recording-banner-label"></span>
-                    <button id="btn-stop-recording" class="preview-back-btn">■ Stop recording</button>
-                </div>
-
-                <div id="edit-empty" class="move-text-empty">
-                    Play a move on the board (or pick a line from the outline) to start editing it.
-                </div>
-
-                <div id="edit-form" hidden>
-                    <label class="field-label" for="move-text-editor">Move notes</label>
-                    <textarea id="move-text-editor" class="comment-editor" spellcheck="false"
-                        placeholder="Explain this move to the student..."></textarea>
-
-                    <button id="btn-insert-preview" class="secondary" type="button">+ Insert line preview</button>
-
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="move-skip-toggle" />
-                        Skippable (auto-played for the student, no notes shown)
-                    </label>
-
-                    <label class="field-label">NAG</label>
-                    <div id="nag-palette" class="nag-palette"></div>
+                    <button id="btn-download-pgnc" title="Locked: opens straight into student mode, no editing tools">Export for students (.pgnc)</button>
                 </div>
             </div>
         </div>
 
-        <!-- Outline: tutte le sezioni/linee del corso, annidate e scorrevoli -->
-        <div class="sections-column">
+        <!-- Outline: tutte le sezioni/linee del corso, annidate e scorrevoli.
+             Stessa struttura "linguetta + foglio" dei tab, per coerenza. -->
+        <aside class="sections-column">
             <div class="sections-header">
-                <label class="field-label">Course outline</label>
+                <div class="tab-switcher">
+                    <div class="tab selected">OUTLINE</div>
+                </div>
                 <div id="sections-add-buttons" class="sections-add-buttons">
-                    <button id="btn-add-root-section" class="outline-icon-btn" title="Add top-level section">+§</button>
-                    <button id="btn-add-root-line" class="outline-icon-btn" title="Add top-level line">+♟</button>
+                    <button id="btn-add-root-section" class="icon-btn" title="Add top-level section">+§</button>
+                    <button id="btn-add-root-line" class="icon-btn" title="Add top-level line">+♟</button>
                 </div>
             </div>
             <div id="sections-panel" class="sections-panel"></div>
-        </div>
+        </aside>
 
+    </div>
+
+    <!-- Fuori dal pannello tab così restano raggiungibili anche dal tab
+         NOTES (utile per scorrere la linea mentre la si annota). -->
+    <div class="nav-buttons">
+        <button id="btn-nav-first" class="nav-btn nav-btn-ghost" title="Start of line">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6l-7 6 7 6"/><path d="M9 6l-7 6 7 6"/></svg>
+        </button>
+        <button id="btn-nav-back" class="nav-btn nav-btn-primary" title="Back">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <button id="btn-nav-forward" class="nav-btn nav-btn-primary" title="Forward">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button id="btn-nav-last" class="nav-btn nav-btn-ghost" title="End of line">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l7 6-7 6"/><path d="M15 6l7 6-7 6"/></svg>
+        </button>
     </div>
 
     <!-- Path relativi alla RADICE del sito: vedi il <base> qui sopra. -->
