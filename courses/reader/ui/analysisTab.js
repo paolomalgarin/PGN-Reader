@@ -2,11 +2,13 @@ import { state, onStateChange, currentLine, currentMove } from "../state.js";
 import { renderMoveText } from "../courseText.js";
 import { startPreview, stopPreview } from "../studyPlayback.js";
 import { rebuildToIndex } from "../lineNav.js";
+import { resolvePath } from "../Course.js";
 
 let board = null;
 let els = {};
 let onBackToLine = null; // iniettata da main.js: ricostruisce la board sulla posizione reale
 let isAnalyzing = false;
+const ENGINE_LINES = 1;
 let lastEvalData = { score: 0, type: 'cp' };
 
 export function initAnalysisTab(chessboard, backToLineFn) {
@@ -15,12 +17,11 @@ export function initAnalysisTab(chessboard, backToLineFn) {
 
     els = {
         text: document.getElementById('move-text'),
-        lineTitle: document.getElementById('current-line-title'),
+        heading: document.getElementById('line-heading'),
         previewBanner: document.getElementById('preview-banner'),
         previewLabel: document.getElementById('preview-banner-label'),
         btnBackToLine: document.getElementById('btn-back-to-line'),
         btnAnalysis: document.getElementById('btn-analysis'),
-        engineInfo: document.getElementById('engine-info'),
         evalBar: document.getElementById('eval-bar'),
         evalFill: document.getElementById('eval-fill'),
         evalTextTop: document.getElementById('eval-text-top'),
@@ -43,7 +44,7 @@ export function initAnalysisTab(chessboard, backToLineFn) {
  */
 export function handleBoardMove() {
     if (isAnalyzing) {
-        board.startCalculating(handleEngineUpdate);
+        board.startCalculating(handleEngineUpdate, ENGINE_LINES);
     } else if (board.game && board.game.game_over()) {
         let result = '1/2-1/2';
         if (board.game.in_checkmate()) {
@@ -51,13 +52,9 @@ export function handleBoardMove() {
         }
         lastEvalData = { gameOver: true, result };
         updateEvalBar(lastEvalData);
-        els.engineInfo.innerText = board.game.in_checkmate()
-            ? `Checkmate! ${result}`
-            : 'Game over: draw';
     } else {
         lastEvalData = { score: 0, type: 'cp' };
         updateEvalBar(lastEvalData);
-        els.engineInfo.innerText = 'Engine off';
     }
 }
 
@@ -65,39 +62,23 @@ function toggleAnalysis() {
     if (isAnalyzing) {
         board.stopCalculating();
         isAnalyzing = false;
-        els.btnAnalysis.innerText = 'Start Analysis';
+        els.btnAnalysis.innerText = 'Show evaluation';
         els.btnAnalysis.classList.remove('danger');
-        els.engineInfo.innerText = 'Engine off';
+        lastEvalData = { score: 0, type: 'cp' };
+        updateEvalBar(lastEvalData);
     } else {
-        board.startCalculating(handleEngineUpdate);
+        board.startCalculating(handleEngineUpdate, ENGINE_LINES);
         isAnalyzing = true;
-        els.btnAnalysis.innerText = 'Stop Analysis';
+        els.btnAnalysis.innerText = 'Hide evaluation';
         els.btnAnalysis.classList.add('danger');
     }
 }
 
+// Del motore interessa solo il numero per la eval bar, non le linee migliori:
+// una sola variante (MultiPV 1) è anche molto meno pesante da calcolare.
 function handleEngineUpdate(evalData) {
     lastEvalData = evalData;
     updateEvalBar(evalData);
-
-    if (evalData.gameOver) {
-        els.engineInfo.innerText = evalData.result === '1/2-1/2'
-            ? 'Game over: draw'
-            : `Checkmate! Result: ${evalData.result}`;
-        return;
-    }
-    if (!evalData.lines || evalData.lines.length === 0) {
-        els.engineInfo.innerText = `Depth: ${evalData.depth}`;
-        return;
-    }
-    const rows = evalData.lines.map((line, i) => {
-        const scoreStr = line.type === 'mate'
-            ? `Mate in M${Math.abs(line.score)}`
-            : `${line.score > 0 ? '+' : ''}${line.score.toFixed(2)}`;
-        const lineText = line.sanLine || line.bestMove || '...';
-        return `${i + 1}. (${scoreStr}) ${lineText}`;
-    });
-    els.engineInfo.innerHTML = `Depth: ${evalData.depth}<br>` + rows.join('<br>');
 }
 
 // Calcola SEMPRE dal punto di vista non-flippato: il flip visivo è delegato
@@ -166,9 +147,36 @@ function onBackToLineClick() {
     if (onBackToLine) onBackToLine();
 }
 
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
+ * Stessa gerarchia visiva dei commenti del reader principale (classi
+ * cb-comment-*): il titolo della sezione che contiene la linea come
+ * "apertura", il titolo della linea come "variante". Se la linea sta
+ * direttamente alla radice del corso, come titolo principale si usa il nome
+ * del corso.
+ */
+function renderHeading(line) {
+    if (!line) return '';
+    const parent = state.currentPath.length > 1
+        ? resolvePath(state.course, state.currentPath.slice(0, -1))
+        : null;
+    const top = parent && parent.title ? parent.title : (state.course.meta.title || '');
+    const lineTitle = line.title || 'Untitled line';
+
+    let html = '';
+    if (top && top !== lineTitle) html += `<div class="cb-comment-opening">${escapeHTML(top)}</div>`;
+    html += `<div class="cb-comment-variation">${escapeHTML(lineTitle)}</div>`;
+    return html;
+}
+
 function render() {
     const line = currentLine();
-    els.lineTitle.textContent = line ? line.title : '';
+    els.heading.innerHTML = renderHeading(line);
 
     if (state.preview) {
         els.previewBanner.hidden = false;
@@ -181,10 +189,12 @@ function render() {
     const move = currentMove();
     if (!move) {
         els.text.innerHTML = line
-            ? '<div class="move-text-empty">Start of the line — play through it to see the notes.</div>'
-            : '<div class="move-text-empty">Pick a line from the outline on the right to begin.</div>';
+            ? '<div class="cb-comment-empty">Start of the line — step forward to see the notes.</div>'
+            : '<div class="cb-comment-empty">Pick a line from the outline to begin.</div>';
         return;
     }
 
-    els.text.innerHTML = renderMoveText(move.text) || '<div class="move-text-empty">No notes on this move.</div>';
+    els.text.innerHTML = move.text && move.text.trim()
+        ? `<div class="cb-comment-content">${renderMoveText(move.text)}</div>`
+        : '<div class="cb-comment-empty">No notes on this move.</div>';
 }
