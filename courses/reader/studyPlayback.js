@@ -16,6 +16,7 @@
 
 import { state, setPreview } from "./state.js";
 import { rebuildToIndex } from "./lineNav.js";
+import { applyMoveAnnotations } from "./boardSync.js";
 import { playMoveSoundForSan } from "../../reader/sound.js";
 
 const STEP_DELAY_MS = 300;
@@ -89,6 +90,7 @@ function stepPreview(board, moves, index) {
         const result = scratch.move(moves[index].move);
         if (result) {
             board.setPosition(scratch.fen(), { from: result.from, to: result.to });
+            applyMoveAnnotations(board, moves[index]);
             playMoveSoundForSan(moves[index].move);
         }
 
