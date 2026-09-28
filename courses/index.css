@@ -1,87 +1,155 @@
-/* Stili SOLO per la sezione corsi: variabili di colore/font, e le classi
-   condivise (.tab, .tab-content, .nav-btn, .secondary, .danger,
-   .field-label, .comment-editor, .nag-palette, .export-buttons,
-   .error-text...) arrivano da ../index.css, riusato via <link> in
-   courses/index.html — qui non li si ridefinisce mai da zero. */
+/* Stili SOLO per la sezione corsi. Palette (--paper, --ink, --accent, --rule…),
+   tema chiaro/scuro e componenti condivisi (.app-header, .icon-btn,
+   .mode-switch, .tab, .tab-content, .nav-buttons, .cb-comment-*, .field-label,
+   .comment-editor, .nag-palette, button…) arrivano da /index.css: qui si usano
+   gli stessi token, mai colori scritti a mano, così il tema scuro funziona da solo. */
 
-/* Un elemento con `display` impostato a livello di classe (es.
-   .preview-banner sotto, che è display:flex) ignora l'attributo HTML
-   `hidden` di default: la regola dello user-agent [hidden]{display:none} ha
-   la stessa specificità di una classe, e in caso di parità vince l'origine
-   "author" — quindi senza questa riga esplicita il banner "Back to line"
-   resterebbe visibile anche quando il suo elemento è hidden. */
+/* Un elemento con `display` impostato a livello di classe ignora l'attributo
+   HTML `hidden` (la regola dello user-agent ha la stessa specificità e perde
+   contro l'origine "author"): questa riga lo rende affidabile ovunque. */
 [hidden] {
     display: none !important;
 }
 
-.courses-layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 16px;
-    max-width: 1400px;
-    margin: 0 auto;
-    /* Il body del sito principale è text-align:center (pensato per il
-       reader ad albero) — qui testo delle spiegazioni e outline devono
-       leggersi come prosa normale, quindi si sovrascrive per l'intera
-       pagina corsi. */
+/* --- Layout: come .board-and-controls del sito, ma a 3 colonne ---
+   Una sola misura (--board-size) governa scacchiera, colonna di sinistra,
+   pannello tab e outline, così restano sempre alla stessa altezza e la
+   scacchiera non viene mai compressa: se le tre colonne non ci stanno, è la
+   scacchiera a rimpicciolirsi (o l'outline a scendere sotto), mai a tagliarsi.
+   Nel sito principale la stessa misura è scritta a mano in ogni regola
+   (min(70vh, calc(100vw - 60px))): qui la si sovrascrive in un punto solo. */
+
+.board-and-controls.courses {
+    --col-tabs: 380px;
+    --col-outline: 240px;
+    --board-size: min(70vh, calc(100vw - 60px));
+    --chrome: 38px;             /* eval bar (24) + margine (14) */
+    --pad: 48px;                /* padding orizzontale del contenitore */
+    --gap: 20px;
+
+    max-width: none;
+    gap: var(--gap);
     text-align: left;
 }
 
-.courses-layout .game-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    flex: 0 0 auto;
+.courses .game-area { height: var(--board-size); flex: 0 0 auto; }
+.courses #board-container { width: var(--board-size); height: var(--board-size); flex: 0 0 auto; }
+.courses .tab-content,
+.courses .sections-panel { height: var(--board-size); }
+
+/* Orizzontale: tre colonne affiancate se c'è spazio... */
+@media (min-aspect-ratio: 1/1) {
+    .board-and-controls.courses {
+        flex-wrap: nowrap;
+        --board-size: min(70vh, calc(100vw - var(--col-tabs) - var(--col-outline) - var(--chrome) - 2 * var(--gap) - var(--pad)));
+    }
+    .courses .tabs { width: var(--col-tabs); flex: 0 0 auto; }
+    .courses .sections-column { width: var(--col-outline); flex: 0 0 auto; }
 }
 
-.courses-layout .tabs {
-    flex: 1 1 360px;
-    min-width: 300px;
-    max-width: 420px;
+/* ...se lo schermo è più stretto di così, l'outline scende sotto le altre due. */
+@media (min-aspect-ratio: 1/1) and (max-width: 1100px) {
+    .board-and-controls.courses {
+        flex-wrap: wrap;
+        padding-bottom: 90px; /* la pillola di navigazione è fissa in basso: non deve coprire l'outline */
+        --board-size: min(70vh, calc(100vw - var(--col-tabs) - var(--chrome) - var(--gap) - var(--pad)));
+    }
+    .courses .sections-column { width: 100%; max-width: 640px; }
+    .courses .sections-panel { height: 260px; }
 }
 
-/* --- Outline (colonna destra) --- */
+/* ANALYSIS sempre tutto a sinistra e FILE sempre tutto a destra, anche in
+   modalità studente dove il tab NOTES sparisce: le linguette si dividono
+   l'intera larghezza invece di restare da un terzo ciascuna e centrate. */
+.courses .tabs .tab {
+    width: auto;
+    flex: 1 1 0;
+}
+
+.header-course-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.tab-content {
+    text-align: left;
+}
+
+/* In modalità studente non si edita: niente tab NOTES. Anche i controlli
+   dell'outline sono già esclusi lato JS; questa è solo la rete di sicurezza. */
+body.mode-study #edit-tab,
+body.mode-study #edit {
+    display: none !important;
+}
+
+/* --- Outline (colonna destra): linguetta + foglio come i tab --- */
 
 .sections-column {
-    flex: 1 1 280px;
-    min-width: 240px;
-    max-width: 340px;
     display: flex;
     flex-direction: column;
-    max-height: 640px;
 }
 
 .sections-header {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
+}
+
+.sections-header .tab-switcher {
+    width: auto;
+    justify-content: flex-start;
+}
+
+.sections-header .tab {
+    width: auto;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .sections-add-buttons {
     display: flex;
     gap: 4px;
+    margin-bottom: 4px;
+}
+
+.sections-add-buttons .icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .sections-panel {
+    padding: 10px;
+    background-color: var(--paper-panel);
+    border: solid 1px var(--rule);
+    border-radius: 0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+    box-shadow: var(--shadow-card);
     overflow-y: auto;
-    border: 1px solid var(--border-color, #444);
-    border-radius: 8px;
-    padding: 6px;
-    flex: 1 1 auto;
+    overscroll-behavior: contain;
+    text-align: left;
 }
 
 .outline-row {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 6px;
-    border-radius: 6px;
-    cursor: default;
-    font-size: 0.92em;
+    padding: 6px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--ink);
+}
+
+.outline-row.outline-section {
+    font-weight: 700;
+    color: var(--ink-muted);
 }
 
 .outline-row.outline-line {
@@ -89,27 +157,37 @@
 }
 
 .outline-row.outline-line:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--paper-panel-alt);
 }
 
 .outline-row.active {
-    background: rgba(240, 185, 61, 0.18);
+    background: var(--accent-soft-bg);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.outline-toggle,
+.outline-icon-btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    color: inherit;
+    cursor: pointer;
     font-weight: 600;
+    border-radius: 4px;
 }
 
 .outline-toggle {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
     width: 16px;
     padding: 0;
+    font-size: 12px;
 }
 
 .outline-bullet {
     width: 16px;
     text-align: center;
-    opacity: 0.7;
+    color: var(--ink-faint);
 }
 
 .outline-label {
@@ -117,12 +195,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: left;
 }
 
 .outline-edit-controls {
     display: flex;
-    gap: 2px;
-    opacity: 0.55;
+    gap: 1px;
+    opacity: .5;
 }
 
 .outline-row:hover .outline-edit-controls {
@@ -130,68 +209,59 @@
 }
 
 .outline-icon-btn {
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    font-size: 0.85em;
-    padding: 2px 4px;
-    border-radius: 4px;
+    font-size: 11px;
+    padding: 3px 5px;
+    color: var(--ink-muted);
 }
 
 .outline-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--paper-panel-alt);
+    color: var(--ink);
+    filter: none;
 }
 
 .outline-icon-btn:disabled {
-    opacity: 0.25;
+    background: none;
+    opacity: .25;
     cursor: default;
 }
 
-.outline-icon-btn:disabled:hover {
-    background: none;
-}
-
 .outline-icon-danger:hover {
-    background: rgba(220, 70, 70, 0.35);
+    background: var(--danger);
+    color: var(--danger-ink);
 }
 
 .outline-empty {
-    opacity: 0.6;
-    padding: 8px;
-    font-size: 0.9em;
-}
-
-/* --- Testo del corso (Analysis / Study) --- */
-
-.current-line-title {
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.move-text {
-    line-height: 1.5;
-}
-
-.move-text-empty {
-    opacity: 0.6;
+    color: var(--ink-faint);
     font-style: italic;
+    padding: 8px;
+    font-size: 13px;
 }
 
+/* --- Testo del corso (tab ANALYSIS) --- */
+
+#line-heading:empty {
+    display: none;
+}
+
+/* Il bottone "line preview" dentro al testo di una mossa */
 .preview-btn {
     display: inline-block;
-    margin: 4px 4px 4px 0;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--accent-color, #f0b93d);
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    font-size: 0.92em;
+    margin: 2px 4px 2px 0;
+    padding: 3px 12px;
+    border: solid 1px var(--accent);
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft-bg);
+    color: var(--accent);
+    box-shadow: none;
+    font-size: 12.5px;
+    font-weight: 600;
 }
 
 .preview-btn:hover {
-    background: rgba(240, 185, 61, 0.15);
+    background: var(--accent);
+    color: var(--accent-ink);
+    filter: none;
 }
 
 .preview-banner,
@@ -200,104 +270,100 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    background: rgba(240, 185, 61, 0.15);
-    border: 1px solid rgba(240, 185, 61, 0.4);
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--brass-soft-bg);
+    border: solid 1px var(--brass);
+    border-radius: var(--radius-sm);
 }
 
 .recording-banner {
-    background: rgba(220, 70, 70, 0.15);
-    border-color: rgba(220, 70, 70, 0.45);
+    background: var(--danger-ink);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+:root[data-theme="dark"] .recording-banner {
+    background: rgba(239, 106, 92, .14);
 }
 
 .preview-back-btn {
-    border: none;
-    border-radius: 6px;
-    padding: 4px 8px;
-    cursor: pointer;
-    background: rgba(0, 0, 0, 0.2);
-    color: inherit;
+    margin: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+    box-shadow: none;
+    background: var(--paper-panel-alt);
+    color: var(--ink);
+    border: solid 1px var(--rule);
 }
 
-/* --- Campi FILE tab --- */
+.preview-back-btn:hover {
+    border-color: var(--accent-dim);
+}
+
+/* --- Campi delle tab NOTES / FILE --- */
 
 .text-field {
     width: 100%;
-    box-sizing: border-box;
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color, #444);
-    background: transparent;
-    color: inherit;
+    padding: 9px 11px;
+    font-family: inherit;
+    font-size: 13px;
+    background-color: var(--paper-panel-alt);
+    color: var(--ink);
+    border: solid 1px var(--rule);
+    border-radius: var(--radius-sm);
+}
+
+.text-field:focus {
+    outline: none;
+    border-color: var(--accent-dim);
+    box-shadow: 0 0 0 3px var(--accent-soft-bg);
 }
 
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 8px 0;
-    font-size: 0.92em;
+    gap: 8px;
+    margin: 12px 0 4px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    text-align: left;
 }
 
 .editable-badge {
-    display: inline-block;
-    margin: 6px 0 2px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 0.85em;
-    font-weight: 600;
-    background: rgba(53, 212, 147, 0.16);
-    color: var(--success, #35d493);
+    align-self: flex-start;
+    margin: 12px 0 4px;
+    padding: 3px 11px;
+    border-radius: var(--radius-pill);
+    font-size: 11.5px;
+    font-weight: 700;
+    background: var(--success-soft-bg);
+    color: var(--success);
 }
 
 .editable-badge.locked {
-    background: rgba(220, 70, 70, 0.16);
-    color: var(--danger, #ff7a7a);
+    background: rgba(164, 57, 43, .14);
+    color: var(--danger);
 }
 
-/* --- Mode toggle: dentro il pannello tab, non più un overlay fisso --- */
-
-.mode-toggle-btn {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 8px 14px;
-    border: 1px solid var(--accent-color, #f0b93d);
-    border-radius: var(--radius-pill, 999px);
-    background: transparent;
-    color: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.02em;
+#edit-form > button.secondary {
+    margin-left: 0;
+    margin-top: 10px;
 }
 
-.mode-toggle-btn:hover {
-    background: rgba(240, 185, 61, 0.12);
-}
-
-.analysis-engine-row {
-    margin-top: 14px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border-color, #444);
+.export-buttons {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: flex-start;
+    gap: 2px;
+    margin-top: 14px;
 }
 
-/* In STUDY non si edita: niente Edit tab, niente controlli di editing
-   nell'outline (già gestito lato JS, ma li si nasconde comunque qui per
-   sicurezza in caso di stato incoerente). */
-body.mode-study #edit-tab,
-body.mode-study #edit {
-    display: none !important;
-}
+/* --- Verticale (telefono): pila a una colonna, come nel sito principale --- */
 
-@media (max-width: 900px) {
-    .courses-layout .tabs,
-    .sections-column {
-        max-width: none;
-        width: 100%;
-    }
+@media (max-aspect-ratio: 1/1) {
+    .courses .sections-column { width: min(520px, calc(100vw - 32px)); }
+    .courses .sections-panel { height: 280px; }
 }
