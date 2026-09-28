@@ -1,4 +1,4 @@
-import { createEmptyCourse } from "./Course.js";
+import { createEmptyCourse, firstLineFrom, resolvePath } from "./Course.js";
 
 /**
  * Stato centrale del reader-corsi, sullo stesso pattern di /reader/state.js
@@ -35,14 +35,39 @@ export function notifyChange() {
 }
 
 /**
+ * Dove aprire un corso appena caricato:
+ * - corso EDITABILE (.pgnce): sempre all'inizio della prima linea — la
+ *   posizione in cui si era rimasti a scrivere non è "progresso" di nessuno;
+ * - corso CHIUSO (.pgnc, studente): il punto salvato nel file, se è ancora
+ *   valido (la linea esiste e l'indice è nei limiti), altrimenti l'inizio
+ *   della prima linea.
+ *
  * @param {Object} course
- * @param {{path:number[], index:number}} [openAt] - dove aprire il corso;
- *        default: il progresso salvato nel file stesso
+ * @returns {{path:number[], index:number}}
+ */
+function resolveOpening(course) {
+    const first = firstLineFrom({ type: 'root', children: course.sections });
+    const start = first ? { path: first.path, index: 0 } : { path: [], index: 0 };
+    if (course.meta.editable) return start;
+
+    const saved = course.progress || {};
+    const node = resolvePath(course, saved.sectionPath || []);
+    const index = saved.moveIndex || 0;
+    if (node && node.type === 'line' && index >= 0 && index <= node.moves.length) {
+        return { path: saved.sectionPath, index };
+    }
+    return start;
+}
+
+/**
+ * @param {Object} course
+ * @param {{path:number[], index:number}} [openAt] - override esplicito
  */
 export function setCourse(course, openAt = null) {
+    const where = openAt || resolveOpening(course);
     state.course = course;
-    state.currentPath = openAt ? openAt.path : (course.progress.sectionPath || []);
-    state.currentIndex = openAt ? openAt.index : (course.progress.moveIndex || 0);
+    state.currentPath = where.path;
+    state.currentIndex = where.index;
     state.preview = null;
     state.recording = null;
     state.mode = course.meta.editable ? 'EDIT' : 'STUDY';
