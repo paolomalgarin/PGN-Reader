@@ -9,41 +9,12 @@ import { initFileTab } from "./ui/fileTab.js";
 import { initSectionsPanel } from "./ui/sectionsPanel.js";
 import { initEditTab } from "./ui/editTab.js";
 import { initAnalysisTab, handleBoardMove } from "./ui/analysisTab.js";
+import { initMoveDotsToggle } from "../../reader/ui/boardControls.js";
 
-// Stesso setup del reader principale (vedi /reader/main.js): la board
-// (Chessboard.js) e il motore di validazione (chess.js) sono le stesse
-// librerie globali, caricate una volta sola da index.html.
-const Chessboard = window.Chessboard;
+// Condivide adapter, tema e animazioni con il lettore PGN principale.
+import Chessboard from '../../Chessboard.js';
 
-const myImages = {
-    pieces: {
-        wk: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
-        wq: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-        wr: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-        wb: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-        wn: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-        wp: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
-        bk: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-        bq: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-        br: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-        bb: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
-        bn: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
-        bp: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
-    },
-};
-
-const board = new Chessboard('#board-container', {
-    images: myImages,
-    showSuggestions: true,
-    colors: {
-        selected: 'rgba(255, 214, 79, 0.65)',
-        lastMove: 'rgba(255, 214, 79, 0.45)',
-        suggestion: 'rgba(30, 24, 16, 0.35)',
-        customHighlight: 'rgba(224, 90, 46, 0.55)',
-        arrow: 'rgba(255, 170, 0, 0.85)',
-        availableMoveArrow: 'rgba(88, 140, 158, 0.55)',
-    },
-});
+const board = new Chessboard('#board-container');
 
 /**
  * Salta a `index` mosse dentro la Line puntata da `path`, ricostruendo la
@@ -215,6 +186,7 @@ initAnalysisTab(board, () => {
     syncBoardToCurrentMove(board);
     handleBoardMove();
 });
+initMoveDotsToggle(board);
 
 document.getElementById('btn-nav-first').addEventListener('click', goToStart);
 document.getElementById('btn-nav-back').addEventListener('click', goBack);
@@ -299,9 +271,17 @@ applyStateEffects();
 
 // --- Silenzia/riattiva i suoni ---
 const btnMute = document.getElementById('btn-mute');
+function syncMuteButton() {
+    const muted = isMuted();
+    btnMute.dataset.muted = String(muted);
+    btnMute.setAttribute('aria-pressed', String(muted));
+    btnMute.setAttribute('aria-label', muted ? 'Attiva audio' : 'Disattiva audio');
+    btnMute.title = muted ? 'Attiva audio' : 'Disattiva audio';
+}
+syncMuteButton();
 btnMute.addEventListener('click', () => {
     setMuted(!isMuted());
-    btnMute.textContent = isMuted() ? '🔇' : '🔊';
+    syncMuteButton();
 });
 
 // --- Tema chiaro/scuro ---
@@ -312,11 +292,13 @@ const btnTheme = document.getElementById('btn-theme');
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     try { localStorage.setItem('pgn-reader-theme', theme); } catch (e) { /* resta solo per questa sessione */ }
-    btnTheme.textContent = theme === 'dark' ? '☀️' : '🌙';
+    const nextLabel = theme === 'dark' ? 'Passa al tema chiaro' : 'Passa al tema scuro';
+    btnTheme.setAttribute('aria-label', nextLabel);
+    btnTheme.title = nextLabel;
 }
-applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 btnTheme.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
     applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 

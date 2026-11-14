@@ -1,63 +1,71 @@
 /* ==========================================================================
    DESIGN TOKENS
-   Ispirazione: un quaderno di studio delle aperture — pagina di carta calda,
-   inchiostro seppia/bordeaux per le note, ottone smorzato per i richiami
-   "premianti" (streak, evidenziazioni). Nessun gradiente dorato 3D da app-
-   gioco: superfici piatte, righe sottili come su una pagina vera, un solo
-   accento (bordeaux) che fa davvero da protagonista. Tema scuro incluso
-   (stessa carta, letta "a lume di lampada"), attivabile dal pulsante 🌙/☀️.
+   Tema scuro Dark Plum e tema chiaro High-Contrast Light. Superfici
+   chiaramente separate, tipografia leggibile e controlli essenziali.
    ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
+/* --- PALETTE DELLA SCACCHIERA cm-chessboard ---
+   Modifica questi token per cambiare caselle, frecce ed evidenziazioni. */
 :root {
-    /* carta */
-    --paper: #ece0c4;
-    --paper-panel: #faf3e2;
-    --paper-panel-alt: #f1e6cd;
+    --chess-square-light: #938593;
+    --chess-square-dark: #11001c;
+    /* Ultima mossa: blu/teal separati dalle annotazioni verdi. */
+    --chess-last-move-light: #4f91b5;
+    --chess-last-move-dark: #087b86;
+    /* Verde smeraldo più saturo, leggibile sia sul malva sia sul prugna. */
+    --chess-annotation: #00e676;
+    --chess-manual-arrow: #00c875;
+    --chess-arrow-outline: #1b3a4b;
+    --chess-highlight-light: #00e676;
+    --chess-highlight-dark: #00b866;
+    /* Le frecce che indicano continuazioni PGN sono lilla, opacità 90% nel CSS. */
+    --chess-pgn-arrow: #d3c9d3;
+}
+
+/* --- TEMA CHIARO B: superfici chiare, testo scuro e bordi ben leggibili. --- */
+:root {
+    color-scheme: light;
+    --paper: #f2f3f7;
+    --paper-panel: #ffffff;
+    --paper-panel-alt: #e8eaf0;
     --paper-panel-raised: #ffffff;
-    --rule: #d9c69e;
-    --rule-soft: #e4d3ab;
+    --rule: #c5c9d4;
+    --rule-soft: #d9dce5;
 
-    /* inchiostro */
-    --ink: #2b2013;
-    --ink-muted: #6d5b40;
-    --ink-faint: #a08a68;
+    --ink: #17131d;
+    --ink-muted: #45404e;
+    --ink-faint: #6c6677;
 
-    /* bordeaux — accento primario, l'inchiostro delle correzioni */
-    --accent: #7c2f22;
-    --accent-strong: #9c4531;
-    --accent-dim: #63241a;
-    --accent-ink: #fbf0e0;
-    --accent-soft-bg: rgba(124, 47, 34, 0.1);
+    --accent: #633178;
+    --accent-strong: #7d4294;
+    --accent-dim: #4d245f;
+    --accent-ink: #ffffff;
+    --accent-soft-bg: rgba(99, 49, 120, 0.12);
 
-    /* ottone — streak/premio, evidenziatore */
-    --brass: #a3792f;
-    --brass-strong: #c39440;
-    --brass-ink: #241a06;
-    --brass-soft-bg: rgba(163, 121, 47, 0.16);
+    --brass: #8a6418;
+    --brass-strong: #a4771d;
+    --brass-ink: #ffffff;
+    --brass-soft-bg: rgba(138, 100, 24, 0.13);
 
-    /* prugna — energia del drill */
-    --plum: #6b3d5c;
-    --plum-strong: #8a5578;
-    --plum-ink: #fbf0f7;
+    --plum: #633178;
+    --plum-strong: #7d4294;
+    --plum-ink: #ffffff;
 
-    /* semantici */
-    --success: #3f7a45;
-    --success-ink: #eaf5ea;
-    --success-soft-bg: rgba(63, 122, 69, 0.14);
-    --danger: #a4392b;
-    --danger-strong: #c14b3a;
-    --danger-ink: #fdf1ec;
+    --success: #08764b;
+    --success-ink: #ffffff;
+    --success-soft-bg: rgba(8, 118, 75, 0.12);
+    --danger: #b4233e;
+    --danger-strong: #c82e4b;
+    --danger-ink: #ffffff;
 
-    /* forma — più piatta, meno "pillola ovunque" */
     --radius-sm: 8px;
     --radius: 12px;
     --radius-lg: 16px;
     --radius-pill: 999px;
 
-    /* ombre */
-    --shadow-card: 0 1px 2px rgba(43, 32, 19, .08), 0 10px 24px -14px rgba(43, 32, 19, .28);
-    --shadow-inset-line: inset 0 1px 0 rgba(255, 255, 255, .5);
+    --shadow-card: 0 1px 2px rgba(20, 15, 28, .08), 0 10px 24px -14px rgba(20, 15, 28, .28);
+    --shadow-inset-line: inset 0 1px 0 rgba(255, 255, 255, .9);
 
     --font-display: 'Lora', ui-serif, Georgia, serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -67,46 +75,44 @@
     --ease-out: cubic-bezier(.16, 1, .3, 1);
 }
 
-/* --- TEMA SCURO: grigio-blu freddo e nitido, non più una variante scura
-   della "carta" calda — l'accento resta caldo (terracotta/ottone) proprio
-   per fare da contrasto vivo sopra un fondo freddo, invece di scomparirci
-   dentro. --- */
+/* --- TEMA SCURO A: Dark Plum, prugna profondo e accenti smeraldo. --- */
 :root[data-theme="dark"] {
-    --paper: #12151b;
-    --paper-panel: #1a1e26;
-    --paper-panel-alt: #212631;
-    --paper-panel-raised: #2a303c;
-    --rule: #383f4d;
-    --rule-soft: #2c323e;
+    color-scheme: dark;
+    --paper: #130a19;
+    --paper-panel: #1d1126;
+    --paper-panel-alt: #291632;
+    --paper-panel-raised: #321d3c;
+    --rule: #54345f;
+    --rule-soft: #3b2545;
 
-    --ink: #eef1f6;
-    --ink-muted: #a7b0bf;
-    --ink-faint: #6b7484;
+    --ink: #fbf6fd;
+    --ink-muted: #d3c4db;
+    --ink-faint: #a58eaf;
 
-    --accent: #e0785a;
-    --accent-strong: #ef9478;
-    --accent-dim: #b85f45;
-    --accent-ink: #1a0d08;
-    --accent-soft-bg: rgba(224, 120, 90, 0.18);
+    --accent: #c18bd1;
+    --accent-strong: #dfafea;
+    --accent-dim: #925aa2;
+    --accent-ink: #1b1020;
+    --accent-soft-bg: rgba(193, 139, 209, 0.18);
 
-    --brass: #d9a94a;
-    --brass-strong: #ecc06a;
-    --brass-ink: #241a02;
-    --brass-soft-bg: rgba(217, 169, 74, 0.18);
+    --brass: #e0bb62;
+    --brass-strong: #f1d27e;
+    --brass-ink: #211805;
+    --brass-soft-bg: rgba(224, 187, 98, 0.18);
 
-    --plum: #bd8fce;
-    --plum-strong: #d6ace4;
-    --plum-ink: #241730;
+    --plum: #ad78bb;
+    --plum-strong: #c995d6;
+    --plum-ink: #1b1020;
 
-    --success: #5fc27a;
-    --success-ink: #06210f;
-    --success-soft-bg: rgba(95, 194, 122, .16);
-    --danger: #ef6a5c;
-    --danger-strong: #f68b7f;
-    --danger-ink: #2a0805;
+    --success: #35d99a;
+    --success-ink: #062015;
+    --success-soft-bg: rgba(53, 217, 154, .17);
+    --danger: #ff7187;
+    --danger-strong: #ff91a2;
+    --danger-ink: #25080d;
 
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 32px -16px rgba(0, 0, 0, .75);
-    --shadow-inset-line: inset 0 1px 0 rgba(255, 255, 255, .04);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, .42), 0 14px 32px -16px rgba(0, 0, 0, .72);
+    --shadow-inset-line: inset 0 1px 0 rgba(255, 255, 255, .055);
 }
 
 * {
@@ -207,6 +213,51 @@ body {
     justify-content: center;
     font-size: 15px;
     box-shadow: none;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease;
+}
+
+.icon-btn svg {
+    display: block;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon-btn .theme-icon,
+.icon-btn .audio-icon {
+    display: none;
+}
+
+.icon-btn.move-dots-toggle.is-enabled {
+    color: var(--success);
+    background: var(--success-soft-bg);
+    border-color: var(--success);
+}
+
+.icon-btn .move-dots-icon circle {
+    fill: currentColor;
+    stroke: none;
+}
+
+.icon-btn .move-dots-icon .move-dots-slash {
+    opacity: 0;
+    stroke-width: 2.2;
+    transition: opacity .16s ease;
+}
+
+.icon-btn.move-dots-toggle[aria-pressed="false"] .move-dots-icon .move-dots-slash {
+    opacity: 1;
+}
+
+:root[data-theme="dark"] .icon-btn .theme-icon-sun,
+:root[data-theme="light"] .icon-btn .theme-icon-moon,
+.icon-btn:not([data-muted="true"]) .audio-icon-on,
+.icon-btn[data-muted="true"] .audio-icon-off {
+    display: block;
 }
 
 .icon-btn:hover {
@@ -369,26 +420,6 @@ body.mode-read.exploring .exploration-banner {
     transform: none;
 }
 
-/* --- Barra strumenti del DRILL: sostituisce il vecchio pulsante "flip"
-   fisso in basso a sinistra — anche questo ora prende spazio vero nel
-   layout invece di galleggiare sopra la scacchiera. --- */
-.drill-toolbar {
-    display: none;
-    justify-content: center;
-    padding: 4px 16px 14px;
-}
-
-body.mode-drill .drill-toolbar {
-    display: flex;
-}
-
-.drill-flip-btn {
-    background: var(--paper-panel-alt);
-    color: var(--ink-muted);
-    border: solid 1px var(--rule);
-    box-shadow: none;
-}
-
 /* --- LAYOUT PRINCIPALE --- */
 .board-and-controls {
     display: flex;
@@ -410,23 +441,213 @@ body.mode-drill .drill-toolbar {
 }
 
 #board-container {
+    position: relative;
     width: min(70vh, calc(100vw - 60px));
     height: min(70vh, calc(100vw - 60px));
     border-radius: var(--radius);
     overflow: hidden;
+    background: var(--chess-square-dark);
     box-shadow: 0 0 0 1px var(--rule), var(--shadow-card);
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-/* Colore delle caselle: sempre lo stesso, a prescindere dal tema chiaro/
-   scuro del sito (come su lichess/chess.com — è una scelta a sé). Queste
-   classi sono definite da Chessboard.js stesso con un fallback via CSS
-   puro; qui le sovrascriviamo semplicemente con i nostri colori. */
-.cb-square-light {
-    background-color: #f3e8d0;
+#board-container .cm-chessboard {
+    width: 100%;
+    height: 100%;
 }
 
-.cb-square-dark {
-    background-color: #b1834f;
+/* Le classi .white/.black sono quelle delle caselle SVG di cm-chessboard. */
+#board-container .cm-chessboard .board .square.white {
+    fill: var(--chess-square-light) !important;
+}
+
+#board-container .cm-chessboard .board .square.black {
+    fill: var(--chess-square-dark) !important;
+}
+
+#board-container .cm-chessboard .coordinates .coordinate {
+    font-weight: 700;
+    fill: var(--ink-muted);
+}
+
+#board-container .pgn-board-highlights,
+#board-container .pgn-board-arrows,
+#board-container .pgn-board-errors {
+    pointer-events: none;
+}
+
+#board-container .pgn-square-highlight {
+    pointer-events: none;
+    shape-rendering: crispEdges;
+}
+
+/* Le frecce sono poligoni pieni, con una sola linea di bordo uniforme. */
+#board-container .pgn-arrow {
+    pointer-events: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+#board-container .pgn-arrow--pgn {
+    opacity: 0.9;
+}
+#board-container .pgn-arrow--manual {
+    opacity: 1;
+}
+
+/* NAG in tile arrotondato (stile B) e corona di scacco animata. */
+#board-container .pgn-nag-badge,
+#board-container .pgn-check-crown {
+    pointer-events: none;
+    overflow: visible;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .48));
+}
+#board-container .pgn-check-crown {
+    filter: drop-shadow(0 3px 7px rgba(115, 12, 37, .68));
+}
+
+/* Brilliant ibrido: l'overlay è SOPRA la scacchiera. La maschera SVG
+   apre soltanto i quadretti del percorso e la finestra mobile del pezzo;
+   tutti gli altri pezzi vengono quindi oscurati insieme alle caselle. */
+#board-container .pgn-brilliant-board-layer,
+#board-container .pgn-brilliant-board-layer *,
+#board-container .pgn-brilliant-dim-layer,
+#board-container .pgn-brilliant-dim-layer *,
+#board-container .pgn-brilliant-layer,
+#board-container .pgn-brilliant-layer * {
+    pointer-events: none;
+}
+#board-container .pgn-brilliant-dim {
+    fill: #57535d;
+    opacity: 0;
+    animation: pgn-brilliant-dim-in 440ms cubic-bezier(.42, 0, .58, 1) forwards;
+}
+#board-container .pgn-brilliant-path-square {
+    fill: #00c875;
+    fill-opacity: .62;
+    stroke: rgba(190, 255, 222, .98);
+    stroke-width: 1.25;
+    filter: drop-shadow(0 0 7px rgba(0, 200, 117, .9));
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pgn-brilliant-path-reveal var(--path-reveal-duration, 300ms) cubic-bezier(.42, 0, .58, 1) var(--path-reveal-delay, 0ms) both;
+}
+#board-container .pgn-brilliant-label {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pgn-brilliant-label 1.42s cubic-bezier(.18, .9, .25, 1) both;
+}
+#board-container .pgn-brilliant-pill {
+    fill: #073d32;
+    stroke: #a9ffda;
+    stroke-width: 1.8;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .5)) drop-shadow(0 0 6px rgba(42, 239, 176, .65));
+}
+#board-container .pgn-brilliant-nag-box {
+    fill: #00b976;
+    stroke: rgba(226, 255, 241, .9);
+    stroke-width: .9;
+}
+#board-container .pgn-brilliant-nag-text {
+    fill: #ffffff;
+    font-family: Inter, sans-serif;
+    font-weight: 900;
+}
+#board-container .pgn-brilliant-text {
+    fill: #ffffff;
+    font-family: Inter, sans-serif;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+#board-container.pgn-brilliant-active {
+    pointer-events: none;
+}
+#board-container .pgn-brilliant-pieces-shake {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pgn-brilliant-pieces-shake 320ms cubic-bezier(.36, .07, .19, .97) both;
+}
+@keyframes pgn-brilliant-dim-in {
+    from { opacity: 0; }
+    to { opacity: .74; }
+}
+@keyframes pgn-brilliant-path-reveal {
+    0% { opacity: 0; transform: scale(.76); }
+    48% { opacity: .82; transform: scale(1.035); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes pgn-brilliant-label {
+    0% { opacity: 0; transform: translateY(7px) scale(.88); }
+    16% { opacity: 1; transform: translateY(-1px) scale(1.035); }
+    28%, 78% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-4px) scale(.97); }
+}
+@keyframes pgn-brilliant-pieces-shake {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    12% { transform: translate(-1.25px, .55px) rotate(-.2deg); }
+    25% { transform: translate(1.2px, -.6px) rotate(.2deg); }
+    38% { transform: translate(-1px, .45px) rotate(-.16deg); }
+    51% { transform: translate(.9px, -.4px) rotate(.14deg); }
+    64% { transform: translate(-.65px, .3px) rotate(-.1deg); }
+    77% { transform: translate(.4px, -.2px) rotate(.06deg); }
+    90% { transform: translate(-.18px, .1px) rotate(-.025deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #board-container .pgn-brilliant-dim,
+    #board-container .pgn-brilliant-path-square,
+    #board-container .pgn-brilliant-label,
+    #board-container .pgn-brilliant-pieces-shake {
+        animation: none !important;
+    }
+}
+
+#board-container .cm-promotion-menu {
+    position: absolute;
+    z-index: 20;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: min(82%, 280px);
+    padding: 12px;
+    border: 1px solid var(--chess-annotation);
+    border-radius: 12px;
+    background: var(--paper-panel-raised);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, .35);
+}
+
+#board-container .cm-promotion-choice {
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper-panel);
+    color: var(--ink);
+    font: 600 13px var(--font-body);
+    cursor: pointer;
+}
+
+#board-container .cm-promotion-choice:hover,
+#board-container .cm-promotion-choice:focus-visible {
+    border-color: var(--chess-annotation);
+    box-shadow: 0 0 0 2px rgba(0, 100, 102, .24);
+}
+
+@keyframes pgn-board-error-flash {
+    0% { opacity: 0; }
+    20% { opacity: .78; }
+    100% { opacity: 0; }
+}
+
+#board-container .pgn-error-flash {
+    fill: #d94343;
+    fill-opacity: .72;
+    animation: pgn-board-error-flash .48s ease-out forwards;
+    pointer-events: none;
 }
 
 .tabs {
@@ -539,7 +760,7 @@ body.mode-drill .drill-toolbar {
        restare sempre visivamente scuro. var(--ink) si inverte apposta tra i
        due temi (è il colore del testo), quindi usarla qui mandava la barra
        in confusione nel tema scuro (lo sfondo "nero" diventava chiaro). */
-    background-color: #201810;
+    background-color: #241a2a;
     border-radius: var(--radius-sm);
     margin-right: 14px;
     position: relative;
@@ -557,7 +778,7 @@ body.mode-drill .drill-toolbar {
 
 .eval-bar-fill {
     width: 100%;
-    background: linear-gradient(180deg, #fdf8ee, #e3d8c2);
+    background: linear-gradient(180deg, #fffdf7, #e7dfcc);
     height: 50%;
     transition: height 0.35s var(--ease-out);
 }
@@ -576,12 +797,12 @@ body.mode-drill .drill-toolbar {
 
 .eval-bar-text.top {
     top: 0;
-    color: #f6ede0;
+    color: #fffdf7;
 }
 
 .eval-bar-text.bottom {
     bottom: 0;
-    color: #2b2013;
+    color: #241a2a;
 }
 
 .eval-bar-wrapper.flipped .eval-bar-text {
@@ -1028,9 +1249,7 @@ button:disabled,
     border-top: solid 1px var(--rule-soft);
 }
 
-/* --- NAG: badge rotondi generati da Chessboard.js (colore+simbolo), qui
-   ingranditi e con un anello di carta attorno — più leggibili, più simili a
-   un vero timbro di correzione che a un'icona d'app. --- */
+/* --- NAG: pulsanti rettangolari coordinati con i badge quadrati sulla board. --- */
 .nag-palette {
     display: flex;
     flex-wrap: wrap;
@@ -1043,11 +1262,11 @@ button:disabled,
 }
 
 .nag-btn {
-    width: 46px;
-    height: 46px;
-    padding: 3px;
+    width: 48px;
+    height: 40px;
+    padding: 2px;
     margin: 0;
-    border-radius: 50%;
+    border-radius: 9px;
     background-color: var(--paper-panel-alt);
     border: solid 2px var(--rule);
     display: flex;
@@ -1060,7 +1279,8 @@ button:disabled,
 .nag-btn img {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
+    border-radius: 6px;
+    object-fit: contain;
 }
 
 .nag-btn:hover {
@@ -1074,7 +1294,7 @@ button:disabled,
 
 .nag-btn.selected {
     border-color: var(--nag-color, var(--accent));
-    box-shadow: 0 0 0 3px var(--paper-panel), 0 0 0 5px var(--nag-color, var(--accent));
+    box-shadow: 0 0 0 2px var(--paper-panel), 0 0 0 4px var(--nag-color, var(--accent));
     animation: pop .22s var(--ease-bounce);
 }
 

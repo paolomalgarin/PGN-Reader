@@ -52,10 +52,8 @@ function setAnalysisButtonState(active) {
 }
 
 /**
- * Flippa la board e aggiorna l'eval bar di conseguenza. Esportata perché
- * viene richiamata sia dal bottone "Flip board" dentro il tab analysis, sia
- * dal bottone equivalente sempre visibile usato in modalità drill (dove il
- * pannello dei tab è nascosto — vedi index.html/#btn-flip-drill).
+ * Flippa la board e aggiorna l'eval bar. Il comando è nella barra superiore
+ * condivisa, quindi resta disponibile in ogni tab e modalità, incluso DRILL.
  *
  * In modalità drill, flippare significa anche "scegli di giocare l'altro
  * colore": se a quel punto tocca al pc, gioca subito la sua mossa.

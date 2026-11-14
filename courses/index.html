@@ -19,6 +19,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Palette, tema chiaro/scuro e componenti condivisi arrivano da
          /index.css; courses/index.css contiene SOLO ciò che è specifico dei corsi. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cm-chessboard@8.15.4/assets/chessboard.css">
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="courses/index.css">
     <script>
@@ -28,9 +29,9 @@
         (function () {
             try {
                 var saved = localStorage.getItem('pgn-reader-theme');
-                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                var theme = saved || 'dark';
                 document.documentElement.setAttribute('data-theme', theme);
-            } catch (e) { /* localStorage non disponibile: resta il tema chiaro */ }
+            } catch (e) { /* localStorage non disponibile: resta il tema scuro */ }
         })();
     </script>
 </head>
@@ -38,8 +39,20 @@
 <body class="mode-edit">
     <header class="app-header">
         <div class="app-header-slot app-header-start">
-            <button id="btn-theme" class="icon-btn" title="Toggle light/dark theme" aria-label="Toggle theme"></button>
-            <button id="btn-mute" class="icon-btn" title="Toggle sounds" aria-label="Toggle sounds">🔊</button>
+            <button id="btn-theme" class="icon-btn" title="Passa al tema chiaro" aria-label="Passa al tema chiaro">
+                <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+                <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.6 8.6 0 0 1 8.8 3.8 8.8 8.8 0 1 0 20.2 15.2Z"/><path d="M16.5 3.5v3M15 5h3"/></svg>
+            </button>
+            <button id="btn-mute" class="icon-btn" title="Disattiva audio" aria-label="Disattiva audio" aria-pressed="false">
+                <svg class="audio-icon audio-icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/></svg>
+                <svg class="audio-icon audio-icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m17 9 5 6m0-6-5 6"/></svg>
+            </button>
+            <button id="btn-flip" class="icon-btn" title="Flip board" aria-label="Flip board">
+                <svg class="board-flip-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="1.7"/><path d="M12 5v14M5 12h14M3.5 8.5a8.5 8.5 0 0 1 8-6M3.5 8.5V4.8M3.5 8.5h3.7M20.5 15.5a8.5 8.5 0 0 1-8 6M20.5 15.5v3.7M20.5 15.5h-3.7"/></svg>
+            </button>
+            <button id="btn-toggle-move-dots" class="icon-btn move-dots-toggle" title="Hide legal move dots" aria-label="Hide legal move dots" aria-pressed="true">
+                <svg class="move-dots-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/><path class="move-dots-slash" d="M4 20 20 4"/></svg>
+            </button>
         </div>
 
         <div class="app-header-slot app-header-center">
@@ -88,7 +101,6 @@
 
                 <div class="buttons">
                     <button id="btn-analysis">Show evaluation</button>
-                    <button id="btn-flip">Flip board</button>
                 </div>
 
             </div>
@@ -180,8 +192,10 @@
         </button>
     </div>
 
-    <!-- Path relativi alla RADICE del sito: vedi il <base> qui sopra. -->
-    <script src="Chessboard.js"></script>
+    <!-- chess.js è pronto prima del modulo: il corso può ricostruire subito
+         la posizione iniziale anche mentre cm-chessboard viene creato. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <!-- Il modulo usa la stessa cm-chessboard dell'app principale. -->
     <script src="courses/reader/main.js" type="module"></script>
 </body>
 

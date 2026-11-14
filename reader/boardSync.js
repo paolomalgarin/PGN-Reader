@@ -9,7 +9,7 @@ let hintTimeoutId = null;
 
 /**
  * Attiva/disattiva del tutto le frecce che indicano le mosse conosciute dal
- * PGN da questa posizione (quelle blu) — a qualcuno possono dare fastidio.
+ * PGN da questa posizione (frecce PGN lilla) — a qualcuno possono dare fastidio.
  *
  * @param {boolean} value
  */
@@ -30,8 +30,8 @@ export function areMoveArrowsEnabled() {
  * - ripristina il NAG della mossa corrente (la board lo azzera ad ogni
  *   spostamento di posizione, va sempre re-impostato esplicitamente);
  * - ripristina le frecce/evidenziazioni salvate nel commento del nodo;
- * - ridisegna le frecce "derivate" (colore diverso) che indicano le mosse
- *   conosciute da questa posizione, come nello study mode di lichess — a
+ * - ridisegna le frecce "derivate" (lilla, come le altre frecce PGN) che
+ *   indicano le mosse conosciute da questa posizione, come nello study mode di lichess — a
  *   meno che l'utente le abbia disattivate, o si sia in modalità drill (dove
  *   mostrerebbero subito la risposta): lì restano nascoste per 30 secondi,
  *   poi compaiono come suggerimento per chi è bloccato.

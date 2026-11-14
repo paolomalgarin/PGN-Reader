@@ -9,18 +9,18 @@
         type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cm-chessboard@8.15.4/assets/chessboard.css">
     <link rel="stylesheet" href="index.css">
     <script>
         // Applicato PRIMA che il CSS venga dipinto, per evitare un lampo del
-        // tema sbagliato: legge la preferenza salvata, altrimenti quella di
-        // sistema. Il pulsante nell'header (gestito da reader/main.js) la
+        // tema sbagliato: legge la preferenza salvata, altrimenti usa il tema scuro coordinato alla scacchiera. Il pulsante nell'header (gestito da reader/main.js) la
         // aggiorna e la ricorda per le visite successive.
         (function () {
             try {
                 var saved = localStorage.getItem('pgn-reader-theme');
-                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                var theme = saved || 'dark';
                 document.documentElement.setAttribute('data-theme', theme);
-            } catch (e) { /* localStorage non disponibile: resta il tema chiaro di default */ }
+            } catch (e) { /* localStorage non disponibile: resta il tema scuro predefinito */ }
         })();
     </script>
 </head>
@@ -35,8 +35,20 @@
          quindi ospita anche il selettore di modalità. -->
     <header class="app-header">
         <div class="app-header-slot app-header-start">
-            <button id="btn-theme" class="icon-btn" title="Cambia tema chiaro/scuro" aria-label="Cambia tema"></button>
-            <button id="btn-mute" class="icon-btn" title="Attiva/disattiva suoni" aria-label="Attiva/disattiva suoni">🔊</button>
+            <button id="btn-theme" class="icon-btn" title="Passa al tema chiaro" aria-label="Passa al tema chiaro">
+                <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+                <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.6 8.6 0 0 1 8.8 3.8 8.8 8.8 0 1 0 20.2 15.2Z"/><path d="M16.5 3.5v3M15 5h3"/></svg>
+            </button>
+            <button id="btn-mute" class="icon-btn" title="Disattiva audio" aria-label="Disattiva audio" aria-pressed="false">
+                <svg class="audio-icon audio-icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/></svg>
+                <svg class="audio-icon audio-icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="m17 9 5 6m0-6-5 6"/></svg>
+            </button>
+            <button id="btn-flip" class="icon-btn" title="Flip board" aria-label="Flip board">
+                <svg class="board-flip-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="1.7"/><path d="M12 5v14M5 12h14M3.5 8.5a8.5 8.5 0 0 1 8-6M3.5 8.5V4.8M3.5 8.5h3.7M20.5 15.5a8.5 8.5 0 0 1-8 6M20.5 15.5v3.7M20.5 15.5h-3.7"/></svg>
+            </button>
+            <button id="btn-toggle-move-dots" class="icon-btn move-dots-toggle" title="Hide legal move dots" aria-label="Hide legal move dots" aria-pressed="true">
+                <svg class="move-dots-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/><path class="move-dots-slash" d="M4 20 20 4"/></svg>
+            </button>
         </div>
 
         <div class="app-header-slot app-header-center">
@@ -91,7 +103,6 @@
 
                 <div class="buttons">
                     <button id="btn-analysis">Start Analysis</button>
-                    <button id="btn-flip">Flip board</button>
                 </div>
 
                 <!-- Chess.com-style navigation arrows — handy on mobile,
@@ -161,21 +172,14 @@
 
     </div>
 
-    <!-- Barra del DRILL: sostituisce il vecchio pulsante "flip" fisso in
-         basso a sinistra — anche questo ora prende spazio vero nel layout
-         invece di galleggiare sopra la scacchiera. Visibile solo in DRILL
-         (dove il resto dei tab è nascosto). -->
-    <div class="drill-toolbar">
-        <button id="btn-flip-drill" class="drill-flip-btn">↺ Flip board</button>
-    </div>
-
     <!-- Canvas per i coriandoli d'oro ai milestone di streak in DRILL -->
     <canvas id="confetti-canvas"></canvas>
 
-    <!-- Chessboard.js stays a classic script (data-URI SVGs generated on the
-         fly, no module needed). reader/main.js is an ES module and imports
-         the rest of the app. -->
-    <script src="Chessboard.js"></script>
+    <!-- chess.js è caricato prima del modulo per rendere disponibile subito
+         lo stato della partita anche durante l'inizializzazione della board. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <!-- Il controller importa cm-chessboard come ES module e mantiene le API
+         usate dal lettore PGN. -->
     <script src="reader/main.js" type="module"></script>
 </body>
 

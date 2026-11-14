@@ -8,54 +8,16 @@ import { initModeHandling, needsPgnGate } from "./mode.js";
 import { setHumanColor, maybePlayComputerMove, cancelPendingComputerMove, setAfterMoveCallback, recordHumanMove, getStreak, resetStreak } from "./drill.js";
 import { showPgnGate, hidePgnGate } from "./ui/pgnGate.js";
 import { initTabs, switchTab } from "./ui/tabs.js";
-import { initAnalysisTab, handleBoardMove, flipBoard } from "./ui/analysisTab.js";
+import { initAnalysisTab, handleBoardMove } from "./ui/analysisTab.js";
 import { initMoveList } from "./ui/moveList.js";
 import { initEditTab } from "./ui/editTab.js";
 import { initExportTab } from "./ui/exportTab.js";
+import { initMoveDotsToggle } from "./ui/boardControls.js";
 
-// Chessboard.js resta uno script classico (vedi il commento in fondo a quel
-// file) e si registra esplicitamente su window per un accesso affidabile qui.
-const Chessboard = window.Chessboard;
+// La stessa implementazione cm-chessboard è condivisa con la sezione Corsi.
+import Chessboard from '../Chessboard.js';
 
-const myImages = {
-    pieces: {
-        wk: 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
-        wq: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-        wr: 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-        wb: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-        wn: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-        wp: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg',
-        bk: 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-        bq: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-        br: 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-        bb: 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
-        bn: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
-        bp: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg'
-    }
-};
-
-const board = new Chessboard('#board-container', {
-    images: myImages,
-    showSuggestions: true,
-    colors: {
-        // Giallo-ambra classico da scacchiera (lichess/chess.com): molto più
-        // leggibile del bordeaux/ottone traslucido usato prima, che sulle
-        // caselle chiare/scure risultava spento e poco distinguibile.
-        selected: 'rgba(255, 214, 79, 0.65)',
-        lastMove: 'rgba(255, 214, 79, 0.45)',
-        suggestion: 'rgba(30, 24, 16, 0.35)',
-        // Evidenziazioni disegnate a mano (tasto destro): un rosso-arancio
-        // netto, distinto sia dal giallo di selezione/ultima mossa sia
-        // dall'arancione delle frecce manuali qui sotto.
-        customHighlight: 'rgba(224, 90, 46, 0.55)',
-        // Frecce disegnate a mano: l'arancione "classico" resta bene anche
-        // sul nostro fondo caldo. Le frecce delle mosse disponibili (blu
-        // dell'app originale) diventano un azzurro-petrolio più smorzato,
-        // per non competere visivamente con l'ambra di selezione/lastMove.
-        arrow: 'rgba(255, 170, 0, 0.85)',
-        availableMoveArrow: 'rgba(88, 140, 158, 0.55)'
-    },
-});
+const board = new Chessboard('#board-container');
 
 /**
  * Coda comune eseguita dopo QUALSIASI cambiamento di posizione che non sia
@@ -181,6 +143,7 @@ attachKeyboardNavigation(board, afterNavigate);
 
 initTabs();
 initAnalysisTab(board);
+initMoveDotsToggle(board);
 initMoveList(board, afterNavigate);
 initEditTab(board);
 initExportTab(board);
@@ -259,6 +222,9 @@ function refreshModeSwitch() {
  */
 function applyStateEffects() {
     document.body.className = 'mode-' + state.mode.toLowerCase();
+    // I NAG sono indizi didattici: in Drill restano nascosti anche se il nodo
+    // della linea li contiene; tornando in Edit/Read vengono ripristinati.
+    board.setNagsVisible(state.mode !== 'DRILL');
     document.body.classList.toggle('exploring', state.isExploring);
     refreshModeSwitch();
 
@@ -290,7 +256,6 @@ function applyStateEffects() {
 onStateChange(applyStateEffects);
 applyStateEffects();
 
-document.getElementById('btn-flip-drill').addEventListener('click', flipBoard);
 
 // --- Streak della modalità drill (piccola gamification) ---
 const streakEl = document.getElementById('drill-streak');
@@ -318,9 +283,17 @@ onStateChange(() => {
 
 // --- Silenzia/riattiva i suoni ---
 const btnMute = document.getElementById('btn-mute');
+function syncMuteButton() {
+    const muted = isMuted();
+    btnMute.dataset.muted = String(muted);
+    btnMute.setAttribute('aria-pressed', String(muted));
+    btnMute.setAttribute('aria-label', muted ? 'Attiva audio' : 'Disattiva audio');
+    btnMute.title = muted ? 'Attiva audio' : 'Disattiva audio';
+}
+syncMuteButton();
 btnMute.addEventListener('click', () => {
     setMuted(!isMuted());
-    btnMute.textContent = isMuted() ? '🔇' : '🔊';
+    syncMuteButton();
 });
 
 // --- Tema chiaro/scuro ---
@@ -331,12 +304,14 @@ btnMute.addEventListener('click', () => {
 const btnTheme = document.getElementById('btn-theme');
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('pgn-reader-theme', theme); } catch (e) { /* ok, resta solo per questa sessione */ }
-    btnTheme.textContent = theme === 'dark' ? '☀️' : '🌙';
+    try { localStorage.setItem('pgn-reader-theme', theme); } catch (e) { /* resta solo per questa sessione */ }
+    const nextLabel = theme === 'dark' ? 'Passa al tema chiaro' : 'Passa al tema scuro';
+    btnTheme.setAttribute('aria-label', nextLabel);
+    btnTheme.title = nextLabel;
 }
-applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 btnTheme.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
     applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
